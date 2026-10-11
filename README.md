@@ -1,5 +1,7 @@
 # Project 1: AI agent team
 
+![Agent Office: Aisyah, Ravi, Mei, Daniel and Farid at their desks](agent-office/screenshot-desktop.png)
+
 | Role | File |
 |---|---|
 | Project Leader (Aisyah) | CLAUDE.md (the main Claude Code session) |
