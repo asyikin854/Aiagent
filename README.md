@@ -23,3 +23,14 @@ To add or change a teammate, ask Claude Code ("create a designer subagent thatâ€
 or edit the files in .claude/agents/.
 
 Docs: https://code.claude.com/docs/en/sub-agents
+
+## Projects done by the team
+
+| Project | Built by | Checks | Try it |
+|---|---|---|---|
+| Task 001: Salon appointment page (mockup) | Aisyah, Ravi, Daniel, Farid | Tests: PASS Â· Security: CLEAR TO SHIP | [mockups/salon-appointment.html](mockups/salon-appointment.html) |
+
+<img src="mockups/salon-appointment.png" alt="Salon appointment mockup" width="640">
+
+The same list appears in the Agent Office dashboard under "Projects done by the team".
+To add a project, add an entry to `PROJECTS` in `agent-office/index.html` and a row here.

@@ -1,6 +1,6 @@
 # Task 001: Salon appointment page (mockup)
 
-Status: planned in Agent Office, not built yet.
+Status: done. Built by developer; tester PASS (4 low bugs noted); security CLEAR TO SHIP. See `mockups/salon-appointment.html`.
 Owner request: "Give me a mockup with an appointment form. Just one page."
 
 ## Agreed scope (from the Project Leader)
