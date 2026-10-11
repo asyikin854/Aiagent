@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[SALON NAME] – Book an appointment</title>
+<meta name="description" content="Mockup appointment page for [SALON NAME].">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;600&display=swap">
+<style>
+  :root {
+    --bg: #faf7f4; --surface: #ffffff; --text: #2a2321; --muted: #6b5f5a;
+    --line: #e4dbd5; --accent: #9c3d54; --accent-text: #ffffff; --accent-soft: #f6e9ec;
+    --error: #b3261e; --ok: #1e6b3a; --focus: #1a5fb4;
+    --radius: 12px; --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1716; --surface: #262120; --text: #f3ece8; --muted: #b8aba5;
+      --line: #3d3532; --accent: #e58aa0; --accent-text: #1b1716; --accent-soft: #3a2a2e;
+      --error: #ff8a80; --ok: #7ed39b; --focus: #8ab4f8;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.5 var(--font); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  .note { background: var(--accent-soft); color: var(--text); text-align: center; font-size: .875rem; padding: 8px 16px; margin: 0; }
+  header { padding: 28px 0 8px; }
+  h1, h2 { font-family: var(--display); font-weight: 600; line-height: 1.2; margin: 0 0 8px; }
+  h1 { font-size: clamp(1.75rem, 6vw, 2.5rem); }
+  h2 { font-size: 1.35rem; }
+  .lead { color: var(--muted); margin: 0; }
+  main { display: grid; gap: 20px; padding: 16px 0 40px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+  .services { list-style: none; margin: 0; padding: 0; }
+  .services li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .services li:first-child { border-top: 0; }
+  .services small { display: block; color: var(--muted); }
+  .price { font-weight: 600; white-space: nowrap; }
+  .hours { color: var(--muted); font-size: .9rem; margin: 12px 0 0; }
+  form { display: grid; gap: 16px; }
+  .field { display: grid; gap: 6px; }
+  label { font-weight: 600; }
+  .hint { color: var(--muted); font-size: .85rem; }
+  input, select {
+    width: 100%; min-height: 48px; padding: 10px 12px; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+  }
+  [aria-invalid="true"] { border-color: var(--error); border-width: 2px; }
+  .error { color: var(--error); font-size: .875rem; margin: 0; }
+  .error:empty { display: none; }
+  .row { display: grid; gap: 16px; }
+  button {
+    min-height: 48px; padding: 12px 20px; font: 600 1rem var(--font); border-radius: 999px;
+    border: 2px solid var(--accent); background: var(--accent); color: var(--accent-text); cursor: pointer;
+    transition: transform .15s ease, filter .15s ease;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:active { transform: scale(.98); }
+  button.secondary { background: transparent; color: var(--accent); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  input:focus-visible, select:focus-visible { outline-offset: 0; }
+  #confirm[hidden], form[hidden] { display: none; }
+  #confirm h2 { color: var(--ok); }
+  #confirm h2:focus { outline: none; }
+  #confirm dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
+  #confirm dt { color: var(--muted); }
+  #confirm dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  footer { color: var(--muted); font-size: .85rem; padding: 0 0 32px; }
+  @media (min-width: 600px) { .row { grid-template-columns: 1fr 1fr; } .card { padding: 28px; } }
+  @media (min-width: 900px) { main { grid-template-columns: 5fr 7fr; align-items: start; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<p class="note" role="note">Mockup — bookings are not saved yet.</p>
+<div class="wrap">
+  <header>
+    <h1>[SALON NAME]</h1>
+    <p class="lead">Hair and beauty, booked in a minute.</p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="services-title">
+      <h2 id="services-title">Services</h2>
+      <ul class="services">
+        <li><span>Haircut<small>45 min</small></span><span class="price">from $40</span></li>
+        <li><span>Colour<small>2 hr</small></span><span class="price">from $95</span></li>
+        <li><span>Blow-dry<small>30 min</small></span><span class="price">from $30</span></li>
+        <li><span>Manicure<small>45 min</small></span><span class="price">from $25</span></li>
+      </ul>
+      <p class="hours">Open every day, 9:00 am – 7:00 pm. Sample prices only.</p>
+    </section>
+
+    <section class="card" aria-labelledby="book-title">
+      <form id="booking" novalidate>
+        <h2 id="book-title">Book an appointment</h2>
+        <p class="hint" style="margin:0">All fields are required.</p>
+
+        <div class="field">
+          <label for="name">Your name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" aria-describedby="name-err">
+          <p class="error" id="name-err" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="25"
+                 pattern="\+?(?:[ \-]*[0-9]){7,15}[ \-]*" aria-describedby="phone-hint phone-err">
+          <span class="hint" id="phone-hint">For example +1 555 123 4567</span>
+          <p class="error" id="phone-err" aria-live="polite"></p>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="service">Service</label>
+            <select id="service" name="service" required aria-describedby="service-err">
+              <option value="">Choose a service</option>
+              <option>Haircut</option><option>Colour</option><option>Blow-dry</option><option>Manicure</option>
+            </select>
+            <p class="error" id="service-err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="stylist">Stylist</label>
+            <select id="stylist" name="stylist" required aria-describedby="stylist-err">
+              <option>Any stylist</option><option>Stylist A</option><option>Stylist B</option><option>Stylist C</option>
+            </select>
+            <p class="error" id="stylist-err" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="date">Date</label>
+            <input id="date" name="date" type="date" required aria-describedby="date-err">
+            <p class="error" id="date-err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="time">Time</label>
+            <select id="time" name="time" required aria-describedby="time-err">
+              <option value="">Choose a time</option>
+            </select>
+            <p class="error" id="time-err" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <button type="submit">Request appointment</button>
+      </form>
+
+      <div id="confirm" hidden>
+        <h2 id="confirm-title" tabindex="-1">Thanks, you're all set (in the mockup)</h2>
+        <p>Here is a summary of your booking request:</p>
+        <dl>
+          <dt>Name</dt><dd data-k="name"></dd>
+          <dt>Phone</dt><dd data-k="phone"></dd>
+          <dt>Service</dt><dd data-k="service"></dd>
+          <dt>Stylist</dt><dd data-k="stylist"></dd>
+          <dt>Date</dt><dd data-k="date"></dd>
+          <dt>Time</dt><dd data-k="time"></dd>
+        </dl>
+        <p class="hint">This is a mockup, so nothing was sent or saved.</p>
+        <button type="button" class="secondary" id="again">Book another</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>&copy; [SALON NAME]. Mockup for review.</footer>
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById('booking');
+  var confirmBox = document.getElementById('confirm');
+  var dateEl = document.getElementById('date');
+  var timeEl = document.getElementById('time');
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var localISO = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+
+  // Date limits use the visitor's local date (not UTC): today to 90 days ahead.
+  var today = new Date();
+  var max = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90);
+  dateEl.min = localISO(today);
+  dateEl.max = localISO(max);
+
+  // Time slots: 09:00 to 18:30 every 30 minutes (salon closes 19:00).
+  for (var m = 9 * 60; m < 19 * 60; m += 30) {
+    var v = pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+    var h = Math.floor(m / 60) % 12 || 12;
+    timeEl.add(new Option(h + ':' + pad(m % 60) + (m < 720 ? ' am' : ' pm'), v));
+  }
+
+  // If the chosen date is today, disable slots that have already passed.
+  function updateSlots() {
+    var now = new Date();
+    var isToday = dateEl.value === localISO(now);
+    var nowStr = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    Array.prototype.forEach.call(timeEl.options, function (o) {
+      o.disabled = !!o.value && isToday && o.value <= nowStr;
+    });
+    if (timeEl.selectedOptions[0] && timeEl.selectedOptions[0].disabled) timeEl.value = '';
+  }
+
+  var messages = {
+    name: function (el) {
+      if (el.validity.valueMissing) return 'Please enter your name.';
+      if (el.validity.tooShort || el.validity.customError) return 'Your name needs at least 2 letters.';
+      if (el.validity.tooLong) return 'Please keep your name under 80 characters.';
+    },
+    phone: function (el) {
+      if (el.validity.valueMissing) return 'Please enter a phone number so we can reach you.';
+      if (el.validity.patternMismatch || el.validity.tooLong) return 'Please use 7 to 15 digits. You can use +, spaces and dashes.';
+    },
+    service: function (el) { if (el.validity.valueMissing) return 'Please choose a service.'; },
+    stylist: function (el) { if (el.validity.valueMissing) return 'Please choose a stylist, or pick "Any stylist".'; },
+    date: function (el) {
+      if (el.validity.badInput) return 'Please enter a valid date.';
+      if (el.validity.valueMissing) return 'Please choose a date.';
+      if (el.validity.rangeUnderflow) return 'That date has passed. Please pick today or a later day.';
+      if (el.validity.rangeOverflow) return 'We take bookings up to 90 days ahead.';
+    },
+    time: function (el) { if (el.validity.valueMissing) return 'Please choose a time between 9:00 am and 6:30 pm.'; }
+  };
+
+  function check(el) {
+    if (el.name === 'name') el.setCustomValidity(el.value.trim().length < 2 && el.value.length > 0 ? 'short' : '');
+    var msg = el.checkValidity() ? '' : (messages[el.name](el) || 'Please check this field.');
+    document.getElementById(el.name + '-err').textContent = msg;
+    el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    return !msg;
+  }
+
+  var fields = Array.prototype.slice.call(form.querySelectorAll('input, select'));
+  var tried = false;
+  fields.forEach(function (el) {
+    var ev = el.tagName === 'SELECT' || el.type === 'date' ? 'change' : 'input';
+    el.addEventListener(ev, function () {
+      if (el === dateEl) updateSlots();
+      if (tried || el.getAttribute('aria-invalid') === 'true') check(el);
+    });
+    el.addEventListener('blur', function () { if (el.value) check(el); });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // Mockup: nothing is sent anywhere.
+    tried = true;
+    updateSlots();
+    var firstBad = null;
+    fields.forEach(function (el) { if (!check(el) && !firstBad) firstBad = el; });
+    if (firstBad) { firstBad.focus(); return; }
+
+    var parts = dateEl.value.split('-').map(Number);
+    var niceDate = new Date(parts[0], parts[1] - 1, parts[2])
+      .toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    var values = {
+      name: document.getElementById('name').value.trim(), phone: document.getElementById('phone').value.trim(),
+      service: document.getElementById('service').value,
+      stylist: document.getElementById('stylist').value, date: niceDate, time: timeEl.selectedOptions[0].text
+    };
+    confirmBox.querySelectorAll('dd').forEach(function (dd) { dd.textContent = values[dd.dataset.k]; });
+    form.hidden = true;
+    confirmBox.hidden = false;
+    document.getElementById('confirm-title').focus();
+  });
+
+  document.getElementById('again').addEventListener('click', function () {
+    form.reset();
+    tried = false;
+    fields.forEach(function (el) {
+      el.setAttribute('aria-invalid', 'false');
+      document.getElementById(el.name + '-err').textContent = '';
+    });
+    updateSlots();
+    confirmBox.hidden = true;
+    form.hidden = false;
+    document.getElementById('name').focus();
+  });
+})();
+</script>
+</body>
+</html>

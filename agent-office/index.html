@@ -154,6 +154,24 @@ details[open] summary{margin-bottom:6px}
 .hint{font-size:12px;color:var(--muted)}
 .notice{margin:0 12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:13px;display:none}
 .notice.on{display:block}
+/* projects */
+.projects{display:flex;flex-direction:column;gap:12px}
+.projects h2{margin:0;font-family:var(--display);font-size:24px;line-height:1.1}
+.projects .sub{margin:0;color:var(--muted);font-size:14px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
+.proj{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.proj .thumb{display:block;aspect-ratio:16/10;background:var(--panel-2);border-bottom:1px solid var(--line);overflow:hidden}
+.proj .thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.proj .pbody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.proj h3{margin:0;font-family:var(--display);font-size:19px;line-height:1.15}
+.proj p{margin:0;font-size:13.5px;color:var(--muted)}
+.crew{display:flex;flex-wrap:wrap;gap:6px}
+.crew span{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px 3px 3px;border-radius:99px;background:var(--panel-2)}
+.crew .ava{flex-basis:22px;width:22px;height:22px}
+.verdicts{display:flex;flex-wrap:wrap;gap:6px}
+.verdicts span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;border:1px solid currentColor}
+.verdicts .ok{color:var(--ok)} .verdicts .bad{color:var(--bad)} .verdicts .wait{color:var(--muted)}
+.proj .open{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;background:var(--primary);color:var(--primary-ink);font-weight:600;text-decoration:none}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -202,6 +220,12 @@ details[open] summary{margin-bottom:6px}
       </form>
     </section>
   </div>
+
+  <section class="projects" aria-labelledby="projTitle">
+    <h2 id="projTitle">Projects done by the team</h2>
+    <p class="sub">Finished work from the team, built and checked in Claude Code. Open a project to try it.</p>
+    <div class="proj-grid" id="projects"></div>
+  </section>
 </div>
 
 <script>
@@ -574,6 +598,27 @@ form.addEventListener('submit', function(e){
   box.value = ''; showTab(false); runTask(t);
 });
 box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+
+// ---------- projects done by the team ----------
+// Add a new entry here each time the team finishes a project in Claude Code.
+var PROJECTS = [
+  { title:'Salon appointment page (mockup)', task:'Task 001',
+    summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
+    link:'../mockups/salon-appointment.html', thumb:'../mockups/salon-appointment.png',
+    crew:['leader','developer','tester','security-checker'],
+    verdicts:[{ who:'tester', text:'Tests: PENDING', cls:'wait' }, { who:'security-checker', text:'Security: PENDING', cls:'wait' }] }
+];
+function renderProjects(){
+  document.getElementById('projects').innerHTML = PROJECTS.map(function(p){
+    return '<article class="proj">' +
+      '<a class="thumb" href="'+esc(p.link)+'" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="'+esc(p.thumb)+'" alt="" loading="lazy"></a>' +
+      '<div class="pbody"><h3>'+esc(p.title)+'</h3><p>'+esc(p.task)+' · '+esc(p.summary)+'</p>' +
+      '<div class="crew">'+p.crew.map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
+      '<div class="verdicts">'+p.verdicts.map(function(v){ return '<span class="'+esc(v.cls)+'">'+esc(v.text)+'</span>'; }).join('')+'</div>' +
+      '<a class="open" href="'+esc(p.link)+'" target="_blank" rel="noopener">Open project</a></div></article>';
+  }).join('');
+}
+renderProjects();
 
 renderFeed(); renderResults();
 })();
