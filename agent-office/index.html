@@ -429,7 +429,8 @@ var FILE_PROJECTS = [
   { id:'salon-mockup', source:'file', kind:'web', title:'Salon appointment page (mockup)', task:'Task 001',
     summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
     link:'mockups/salon-appointment.html', thumb:'mockups/salon-appointment.png',
-    crew:['leader','developer','tester','security-checker'], tests:'PASS', security:'CLEAR', createdAt:0 }
+    crew:['leader','developer','tester','security-checker'], tests:'PASS', security:'CLEAR', createdAt:0,
+    secured:['a Content-Security-Policy', 'no page address sent to Google', 'Android backup turned off'] }
 ];
 var teamProjects = [], building = null, projectsCol = null, savedOnline = false;
 
