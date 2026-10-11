@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#E9EDF4; --panel:#FFFFFF; --panel-2:#F4F6FA; --line:#D9DEE8; --ink:#1F2433; --muted:#5A6275;
+  --primary:#3F4FD8; --primary-ink:#FFFFFF; --accent:#F5A524; --ok:#1E8A55; --bad:#B4332E;
+  --wall:#34425F; --wall-2:#3D4C6C; --floor:#D6B188; --floor-line:#C79F74; --board:#F7F8FB;
+  --display:'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --body:'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#141824; --panel:#1C2130; --panel-2:#232939; --line:#30374A; --ink:#E9ECF3; --muted:#A3AABB;
+    --primary:#6F7CFF; --primary-ink:#0E1120; --ok:#4CC98A; --bad:#FF7A72; --board:#E9ECF3;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#141824; --panel:#1C2130; --panel-2:#232939; --line:#30374A; --ink:#E9ECF3; --muted:#A3AABB;
+  --primary:#6F7CFF; --primary-ink:#0E1120; --ok:#4CC98A; --bad:#FF7A72; --board:#E9ECF3;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+button,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.app{max-width:1440px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:32px;line-height:1.05}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.ghost{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500}
+.ghost:hover{background:var(--panel-2)}
+
+.main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(340px,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+
+/* the office */
+.room{position:relative;border-radius:22px;overflow:hidden;background:var(--floor);
+  background-image:repeating-linear-gradient(90deg,transparent 0 118px,var(--floor-line) 118px 120px);
+  padding:0 16px 18px;color:#1F2433}
+.wall{position:absolute;left:0;right:0;top:0;height:230px;background:var(--wall)}
+.wall::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:#29344D}
+.window{position:absolute;right:26px;top:22px;width:190px;height:120px;border-radius:10px;background:#8EC7E8;border:6px solid #E8EBF2;overflow:hidden}
+.window svg{display:block;width:100%;height:100%}
+.row1{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;padding-top:22px}
+.board{align-self:start;margin-top:4px;background:var(--board);color:#1F2433;border-radius:14px;border:6px solid #C9CFDB;padding:14px 16px;min-height:150px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.board h2{margin:0 0 6px;font-family:var(--display);font-size:20px;line-height:1.1}
+.board .task{font-size:14px;line-height:1.4;max-height:3.6em;overflow:hidden}
+.steps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.steps li{font-size:12px;padding:3px 9px;border-radius:99px;background:#E3E7EF;color:#3A4256}
+.steps li.now{background:var(--accent);color:#1F2433;font-weight:600}
+.steps li.did{background:#CDEBDA;color:#145C39}
+.row2{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}
+@media (max-width:1180px){.row2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.row1{grid-template-columns:minmax(0,1fr)}}
+
+.desk{position:relative;display:flex;flex-direction:column;align-items:stretch}
+.desk svg.char{display:block;width:100%;height:auto}
+.plate{margin:-4px auto 0;background:#FFFDF8;border-radius:10px;padding:6px 12px;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.18);min-width:72%}
+.plate b{display:block;font-family:var(--display);font-size:17px;line-height:1.1}
+.plate span{display:block;font-size:12px;color:#4A5266}
+.plate .status{display:inline-flex;align-items:center;gap:6px;margin-top:3px;font-size:12px;font-weight:600;color:#3A4256}
+.dot{width:8px;height:8px;border-radius:50%;background:#9AA2B4}
+.desk[data-s="thinking"] .dot,.desk[data-s="writing"] .dot{background:var(--accent)}
+.desk[data-s="done"] .dot{background:#2FA36B}
+.bubble{position:absolute;top:6%;right:16%;background:#FFFFFF;border-radius:14px;padding:7px 10px;display:none;gap:4px;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.bubble::after{content:"";position:absolute;left:10px;bottom:-6px;width:12px;height:12px;background:#FFFFFF;transform:rotate(45deg)}
+.bubble i{width:7px;height:7px;border-radius:50%;background:#3A4256;display:block}
+.desk[data-s="thinking"] .bubble,.desk[data-s="writing"] .bubble{display:flex}
+.desk.lead .plate{min-width:60%}
+
+.eyes{transform-box:fill-box;transform-origin:center;animation:blink 5.5s infinite}
+.arm{transform-box:fill-box;transform-origin:50% 0}
+.desk[data-s="writing"] .armL{animation:tap .32s infinite alternate}
+.desk[data-s="writing"] .armR{animation:tap .32s .16s infinite alternate}
+.desk[data-s="thinking"] .head{animation:ponder 1.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+.lid{transition:fill .3s}
+.desk[data-s="writing"] .glow,.desk[data-s="thinking"] .glow{opacity:.9}
+.glow{opacity:0;transition:opacity .3s}
+.bubble i{animation:bob 1s infinite}
+.bubble i:nth-child(2){animation-delay:.15s}.bubble i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes tap{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+@keyframes ponder{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-3px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.eyes,.arm,.head,.bubble i{animation:none!important}}
+
+/* side panel */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.tabs{display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--line)}
+.tab{flex:1;min-height:44px;border:0;border-radius:12px;background:transparent;cursor:pointer;font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--panel-2);color:var(--ink);font-weight:600}
+.tab .count{font-size:12px;color:var(--muted);margin-left:4px}
+.feed{height:600px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+@media (max-width:980px){.feed{height:60vh}}
+.empty{margin:auto 0;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center;padding:12px}
+.empty h3{margin:0;color:var(--ink);font-family:var(--display);font-size:22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{min-height:40px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;text-align:left}
+.chip:hover{border-color:var(--primary)}
+
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.you{flex-direction:row-reverse}
+.ava{flex:0 0 40px;width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--wall)}
+.ava svg{display:block;width:100%;height:100%}
+.ava.me{display:flex;align-items:center;justify-content:center;background:var(--primary);color:var(--primary-ink);font-weight:600;font-size:13px}
+.body{min-width:0;max-width:86%;display:flex;flex-direction:column;gap:6px}
+.msg.you .body{align-items:flex-end}
+.who{font-size:13px;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600}
+.text{background:var(--panel-2);border-radius:4px 14px 14px 14px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.you .text{background:var(--primary);color:var(--primary-ink);border-radius:14px 4px 14px 14px}
+.msg.err .text{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+details.think,details.res{border:1px dashed var(--line);border-radius:12px;padding:6px 10px;background:var(--panel)}
+details.res{border-style:solid}
+summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);min-height:28px;display:flex;align-items:center;gap:6px}
+details[open] summary{margin-bottom:6px}
+.think .t{font-size:13px;color:var(--muted);white-space:pre-wrap}
+.live{font-size:13px;color:var(--muted);font-style:italic}
+
+.rich{font-size:13.5px;overflow-wrap:anywhere}
+.rich p{margin:0 0 8px;white-space:pre-wrap}
+.rich pre{margin:0 0 8px;background:#151A26;color:#E6E9F1;border-radius:10px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5}
+.rich code{font-family:var(--mono);font-size:12.5px;background:var(--panel-2);padding:1px 5px;border-radius:5px}
+.rich pre code{background:none;padding:0}
+.copy{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;font-weight:500}
+
+.results{height:600px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:980px){.results{height:60vh}}
+.card{border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.card-head{display:flex;align-items:center;gap:10px}
+.card-head .ava{flex-basis:34px;width:34px;height:34px}
+.card-head div{flex:1;min-width:0}
+.card-head b{display:block;font-size:14px}
+.card-head span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
+.composer .rowc{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-width:0;min-height:48px;max-height:160px;resize:vertical;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2)}
+.send{min-height:48px;padding:0 18px;border-radius:14px;border:0;background:var(--primary);color:var(--primary-ink);font-weight:600;cursor:pointer}
+.send.stop{background:var(--bad);color:#FFFFFF}
+.send:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:var(--muted)}
+.notice{margin:0 12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:13px;display:none}
+.notice.on{display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Agent Office</h1>
+      <p>Your AI team for websites, mobile apps and SaaS</p>
+    </div>
+    <button class="ghost" id="clear" type="button">Clear chat and results</button>
+  </header>
+
+  <div class="main">
+    <section class="room" aria-label="The office">
+      <div class="wall" aria-hidden="true">
+        <div class="window"><svg viewBox="0 0 190 120" preserveAspectRatio="none"><rect width="190" height="120" fill="#9BD0EE"/><circle cx="150" cy="30" r="14" fill="#FFE29A"/><rect x="0" y="70" width="28" height="50" fill="#5E7BA6"/><rect x="30" y="52" width="22" height="68" fill="#4E6A94"/><rect x="56" y="78" width="30" height="42" fill="#6B88B2"/><rect x="90" y="60" width="20" height="60" fill="#4E6A94"/><rect x="114" y="82" width="34" height="38" fill="#5E7BA6"/><rect x="152" y="66" width="38" height="54" fill="#4E6A94"/><line x1="95" y1="0" x2="95" y2="120" stroke="#E8EBF2" stroke-width="5"/></svg></div>
+      </div>
+      <div class="row1">
+        <div class="board" aria-live="polite">
+          <h2 id="boardTitle">Task board</h2>
+          <div class="task" id="boardTask">No task yet. Type one in the team chat.</div>
+          <ol class="steps" id="boardSteps"></ol>
+        </div>
+        <div id="leadDesk"></div>
+      </div>
+      <div class="row2" id="staff"></div>
+    </section>
+
+    <section class="panel" aria-label="Team chat and results">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tabChat" aria-selected="true" aria-controls="feed" type="button">Team chat</button>
+        <button class="tab" role="tab" id="tabRes" aria-selected="false" aria-controls="results" type="button">Results<span class="count" id="resCount"></span></button>
+      </div>
+      <div class="feed" id="feed" role="tabpanel" aria-labelledby="tabChat" aria-live="polite"></div>
+      <div class="results" id="results" role="tabpanel" aria-labelledby="tabRes" hidden></div>
+      <p class="notice" id="notice"></p>
+      <form class="composer" id="form">
+        <div class="rowc">
+          <label for="box" class="sr">Give your team a task</label>
+          <textarea id="box" rows="2" placeholder="Give your team a task…"></textarea>
+          <button class="send" id="send" type="submit">Send</button>
+        </div>
+        <span class="hint">Each task uses your own Claude usage. The team writes plans, code and checks here; copy results into Claude Code to apply them to your project.</span>
+      </form>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ---------- the team ----------
+var TEAM = {
+  leader: { name:'Aisyah', role:'Project Leader', skin:'#E2AE88', hair:'#2E9C8F', style:'hijab', shirt:'#2B3A67', acc:'', item:'papers', wallItem:'notes', lid:'#F5A524',
+    prompt:'You plan, delegate to the right teammate, and check the result. Keep the first version small. Never deploy, delete data or spend money without the owner\'s OK.' },
+  developer: { name:'Ravi', role:'Developer', skin:'#8D5B3E', hair:'#1E1A19', style:'curly', shirt:'#4A5BE0', acc:'headset', item:'mug', wallItem:'poster', lid:'#7FD6FF',
+    prompt:'You turn an agreed plan into working code. Follow the existing stack if one is given; otherwise pick a simple, popular one and say why. Make the smallest change that meets the goal. Web: responsive, phone first. Mobile: handle offline and small screens. SaaS: every query respects which user or organization owns the data. Validate input on the server. Read secrets from environment variables, never hard-code them. End with how to run it and what the tester should focus on.' },
+  'database-manager': { name:'Mei', role:'Database Manager', skin:'#F0C8A4', hair:'#2B2220', style:'bun', shirt:'#7A4FD0', acc:'glasses', item:'plant', wallItem:'shelf', lid:'#C9B5FF',
+    prompt:'You protect the data and keep it fast. Every change is a migration that can be applied and rolled back. Use clear names, correct types, primary and foreign keys, NOT NULL where required, created_at and updated_at. For SaaS, every customer table has an owner or organization column and access rules (for example row-level security). Add indexes for lookups and explain each. Parameterized queries only. Anything destructive needs the Project Leader\'s approval and a backup first. End with how to apply and roll back.' },
+  tester: { name:'Daniel', role:'Tester', skin:'#D9A27A', hair:'#4A3424', style:'cap', shirt:'#2FA36B', acc:'', item:'checklist', wallItem:'clock', lid:'#9BE8C1',
+    prompt:'You find problems before real users do. Write tests for the normal path, empty and invalid input, very long input, missing permissions, slow or failed network, and (for SaaS) one user trying to see another user\'s data. You do not fix app code; report each bug with steps, expected, actual and severity. End with a clear verdict: PASS or FAIL.' },
+  'security-checker': { name:'Farid', role:'Security Checker', skin:'#C68B62', hair:'#191919', style:'short', shirt:'#3C4454', acc:'glasses', item:'lock', wallItem:'shield', lid:'#FFB4AE',
+    prompt:'You review; you do not change code. Check secrets in code, login and sessions, authorization (can one user reach another\'s data), injection (SQL, command, XSS), input and upload limits, rate limiting, dependencies, HTTPS and cookie settings, CORS, debug mode, and for mobile no secrets in the app bundle. Report each finding with severity (CRITICAL, HIGH, MEDIUM, LOW), where, the risk in plain words, and a fix. End with a verdict: CLEAR TO SHIP, or BLOCKED if any CRITICAL or HIGH.' }
+};
+var STAFF = ['developer','database-manager','tester','security-checker'];
+
+// ---------- drawing ----------
+function hairBack(c){
+  if (c.style === 'hijab') return '<path d="M84 90 Q84 46 120 46 Q156 46 156 90 L162 128 Q120 142 78 128 Z" fill="'+c.hair+'"/>';
+  return '';
+}
+function hairFront(c){
+  var h = c.hair;
+  switch(c.style){
+    case 'curly': return '<g fill="'+h+'"><circle cx="99" cy="68" r="10"/><circle cx="108" cy="58" r="11"/><circle cx="121" cy="54" r="12"/><circle cx="134" cy="58" r="11"/><circle cx="142" cy="68" r="10"/></g>';
+    case 'bun': return '<path d="M95 80 Q95 54 120 54 Q145 54 145 80 Q138 64 120 64 Q102 64 95 80Z" fill="'+h+'"/><circle cx="120" cy="49" r="10" fill="'+h+'"/>';
+    case 'cap': return '<path d="M95 76 Q95 54 120 54 Q145 54 145 76 Q138 68 120 68 Q102 68 95 76Z" fill="'+h+'"/><path d="M94 72 Q96 50 120 50 Q144 50 146 72 Z" fill="#F5A524"/><rect x="118" y="66" width="40" height="8" rx="4" fill="#E0901A"/>';
+    case 'short': return '<path d="M95 80 Q94 54 120 53 Q146 54 145 80 Q140 62 120 63 Q100 62 95 80Z" fill="'+h+'"/>';
+    default: return '';
+  }
+}
+function accessory(c){
+  if (c.acc === 'glasses') return '<g fill="none" stroke="#1F2433" stroke-width="2"><circle cx="111" cy="83" r="6.5"/><circle cx="129" cy="83" r="6.5"/><line x1="117.5" y1="83" x2="122.5" y2="83"/></g>';
+  if (c.acc === 'headset') return '<path d="M93 82 Q93 46 120 46 Q147 46 147 82" fill="none" stroke="#2A3147" stroke-width="4"/><rect x="88" y="76" width="9" height="15" rx="4" fill="#2A3147"/><rect x="143" y="76" width="9" height="15" rx="4" fill="#2A3147"/><path d="M147 88 Q146 100 132 100" fill="none" stroke="#2A3147" stroke-width="3"/>';
+  return '';
+}
+function deskItem(c){
+  switch(c.item){
+    case 'mug': return '<rect x="172" y="132" width="16" height="20" rx="3" fill="#F2F4F8"/><path d="M188 137 q8 0 8 6 q0 6 -8 6" fill="none" stroke="#F2F4F8" stroke-width="3"/><path d="M176 126 q3 -4 0 -8 M182 126 q3 -4 0 -8" stroke="#FFFFFF" stroke-width="2" fill="none" opacity=".6"/>';
+    case 'plant': return '<rect x="172" y="134" width="20" height="18" rx="3" fill="#C9724A"/><ellipse cx="176" cy="126" rx="6" ry="12" fill="#3FA266" transform="rotate(-20 176 126)"/><ellipse cx="188" cy="124" rx="6" ry="13" fill="#2F8A55" transform="rotate(18 188 124)"/><ellipse cx="182" cy="120" rx="5" ry="13" fill="#46B172"/>';
+    case 'papers': return '<rect x="40" y="140" width="34" height="12" rx="2" fill="#F7F8FB" transform="rotate(-6 57 146)"/><rect x="42" y="136" width="34" height="12" rx="2" fill="#FFFFFF"/><rect x="172" y="132" width="16" height="20" rx="3" fill="#F2F4F8"/>';
+    case 'checklist': return '<rect x="168" y="124" width="28" height="28" rx="3" fill="#FFFFFF"/><path d="M173 132 l3 3 l5 -6 M173 142 l3 3 l5 -6" stroke="#2FA36B" stroke-width="2" fill="none"/><line x1="184" y1="132" x2="192" y2="132" stroke="#9AA2B4" stroke-width="2"/><line x1="184" y1="142" x2="192" y2="142" stroke="#9AA2B4" stroke-width="2"/>';
+    case 'lock': return '<path d="M174 134 v-6 a8 8 0 0 1 16 0 v6" fill="none" stroke="#C9CFDB" stroke-width="4"/><rect x="170" y="134" width="24" height="18" rx="4" fill="#F5A524"/><circle cx="182" cy="142" r="2.5" fill="#1F2433"/>';
+  }
+  return '';
+}
+function wallItem(c){
+  switch(c.wallItem){
+    case 'notes': return '<rect x="26" y="20" width="22" height="22" fill="#FFE07A" transform="rotate(-6 37 31)"/><rect x="52" y="16" width="22" height="22" fill="#9EE6C3" transform="rotate(5 63 27)"/><rect x="38" y="44" width="22" height="22" fill="#FFB4C8"/>';
+    case 'poster': return '<rect x="24" y="16" width="44" height="56" rx="4" fill="#4A5BE0"/><path d="M36 36 l-6 8 l6 8 M56 36 l6 8 l-6 8 M49 32 l-6 24" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    case 'shelf': return '<rect x="20" y="58" width="56" height="5" rx="2" fill="#8A5E3A"/><g fill="#C9B5FF"><ellipse cx="36" cy="26" rx="10" ry="4"/><rect x="26" y="26" width="20" height="28"/><ellipse cx="36" cy="54" rx="10" ry="4"/></g><path d="M26 36 q10 4 20 0 M26 45 q10 4 20 0" stroke="#7A4FD0" stroke-width="2" fill="none"/><rect x="54" y="34" width="14" height="24" rx="2" fill="#FFE07A"/>';
+    case 'clock': return '<circle cx="46" cy="40" r="20" fill="#FFFFFF" stroke="#C9CFDB" stroke-width="4"/><path d="M46 40 V28 M46 40 H55" stroke="#1F2433" stroke-width="3" stroke-linecap="round"/>';
+    case 'shield': return '<path d="M46 16 L66 24 V42 Q66 60 46 70 Q26 60 26 42 V24 Z" fill="#3C4454" stroke="#FFB4AE" stroke-width="3"/><path d="M38 42 l6 6 l11 -12" stroke="#FFB4AE" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  }
+  return '';
+}
+function charSVG(c, viewBox, withWall){
+  var face = c.style === 'hijab'
+    ? '<ellipse cx="120" cy="84" rx="21" ry="24" fill="'+c.skin+'"/><path d="M99 72 Q120 56 141 72" stroke="#257E74" stroke-width="3" fill="none"/>'
+    : '<circle cx="120" cy="82" r="25" fill="'+c.skin+'"/>';
+  return '<svg class="char" viewBox="'+(viewBox||'0 0 240 200')+'" aria-hidden="true">' +
+    (withWall ? wallItem(c) : '') +
+    '<rect x="82" y="70" width="76" height="94" rx="20" fill="#26304A"/>' +
+    hairBack(c) +
+    '<rect x="86" y="112" width="68" height="60" rx="28" fill="'+c.shirt+'"/>' +
+    '<rect x="113" y="98" width="14" height="18" rx="6" fill="'+c.skin+'"/>' +
+    '<g class="head">' + face + hairFront(c) +
+      '<g class="eyes"><ellipse cx="111" cy="83" rx="2.6" ry="3.2" fill="#1F2433"/><ellipse cx="129" cy="83" rx="2.6" ry="3.2" fill="#1F2433"/></g>' +
+      '<circle cx="104" cy="92" r="4" fill="#F28B8B" opacity=".35"/><circle cx="136" cy="92" r="4" fill="#F28B8B" opacity=".35"/>' +
+      '<path d="M113 94 Q120 99 127 94" stroke="#1F2433" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      accessory(c) +
+    '</g>' +
+    '<g class="arm armL"><rect x="80" y="126" width="18" height="30" rx="9" fill="'+c.shirt+'"/><circle cx="89" cy="155" r="7" fill="'+c.skin+'"/></g>' +
+    '<g class="arm armR"><rect x="142" y="126" width="18" height="30" rx="9" fill="'+c.shirt+'"/><circle cx="151" cy="155" r="7" fill="'+c.skin+'"/></g>' +
+    '<rect x="24" y="152" width="192" height="12" rx="4" fill="#9A6A43"/><rect x="34" y="164" width="172" height="36" fill="#7A5233"/>' +
+    '<path class="glow" d="M92 116 L148 116 L170 152 L70 152 Z" fill="'+c.lid+'" opacity="0" style="mix-blend-mode:screen"/>' +
+    '<path class="lid" d="M93 118 H147 L151 152 H89 Z" fill="#D7DCE6"/><circle cx="120" cy="135" r="5" fill="'+c.lid+'"/>' +
+    '<rect x="80" y="150" width="80" height="4" rx="2" fill="#AEB6C6"/>' +
+    deskItem(c) +
+  '</svg>';
+}
+function avatar(id){
+  if (id === 'you') return '<div class="ava me" aria-hidden="true">You</div>';
+  return '<div class="ava" aria-hidden="true">' + charSVG(TEAM[id], '78 40 84 84', false) + '</div>';
+}
+function deskHTML(id, lead){
+  var c = TEAM[id];
+  return '<div class="desk'+(lead?' lead':'')+'" id="desk-'+id+'" data-s="idle">' +
+    '<div class="bubble" aria-hidden="true"><i></i><i></i><i></i></div>' +
+    charSVG(c, null, true) +
+    '<div class="plate"><b>'+c.name+'</b><span>'+c.role+'</span><span class="status"><span class="dot"></span><span class="st">Waiting for a task</span></span></div>' +
+  '</div>';
+}
+document.getElementById('leadDesk').innerHTML = deskHTML('leader', true);
+document.getElementById('staff').innerHTML = STAFF.map(function(id){ return deskHTML(id); }).join('');
+
+var STATUS_TEXT = { idle:'Waiting for a task', thinking:'Thinking…', writing:'Writing…', done:'Done', waiting:'Waiting for teammates' };
+function setStatus(id, s){
+  var d = document.getElementById('desk-'+id);
+  if (!d) return;
+  d.setAttribute('data-s', s);
+  d.querySelector('.st').textContent = STATUS_TEXT[s] || s;
+}
+function resetStatuses(){ Object.keys(TEAM).forEach(function(id){ setStatus(id,'idle'); }); }
+
+// ---------- state ----------
+var KEY = 'agent-office-v1';
+var state = { msgs: [], results: [] };
+try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && saved.msgs) state = saved; } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify({ msgs: state.msgs.slice(-80), results: state.results.slice(-40) })); } catch(e) {} }
+var uid = 0; function newId(){ return 'm' + Date.now().toString(36) + (uid++); }
+function clock(){ var d = new Date(), h = d.getHours(), m = d.getMinutes(); return (h%12||12)+':'+(m<10?'0':'')+m+(h<12?' am':' pm'); }
+
+// ---------- rendering ----------
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+function inline(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); }
+function rich(text){
+  var parts = String(text||'').split(/```[^\n]*\n?/), out = '';
+  for (var i = 0; i < parts.length; i++){
+    if (i % 2) out += '<pre><code>' + esc(parts[i].replace(/\n$/,'')) + '</code></pre>';
+    else if (parts[i].trim()) parts[i].trim().split(/\n{2,}/).forEach(function(p){ out += '<p>' + inline(p.replace(/^#{1,6}\s*/gm,'')) + '</p>'; });
+  }
+  return out;
+}
+function msgHTML(m){
+  var name = m.who === 'you' ? 'You' : TEAM[m.who].name;
+  var role = m.who === 'you' ? '' : ' · ' + TEAM[m.who].role;
+  var h = '<div class="msg'+(m.who==='you'?' you':'')+(m.error?' err':'')+'" id="'+m.id+'">' + avatar(m.who) + '<div class="body">' +
+    '<span class="who"><b>'+esc(name)+'</b>'+esc(role)+' · '+esc(m.time)+'</span>';
+  if (m.thinking) h += '<details class="think"'+(m.streaming?' open':'')+'><summary>Thinking</summary><div class="t">'+esc(m.thinking)+'</div></details>';
+  if (m.text) h += '<div class="text">'+esc(m.text)+'</div>';
+  if (m.error && m.retry && lastRun && m === state.msgs[state.msgs.length-1]) h += '<button class="copy" type="button" data-retry="1">Try again from '+esc(m.retry)+'\'s step</button>';
+  else if (m.streaming) h += '<div class="live">'+(m.thinking?'Working on it…':'Thinking…')+'</div>';
+  if (m.result) h += '<details class="res"><summary>Result</summary><div class="rich">'+rich(m.result)+'</div><button class="copy" type="button" data-copy="'+m.id+'">Copy result</button></details>';
+  else if (m.streaming && m.resultLen) h += '<div class="live">Writing the result… ('+m.resultLen+' characters)</div>';
+  return h + '</div></div>';
+}
+var feed = document.getElementById('feed');
+function renderFeed(){
+  if (!state.msgs.length){
+    feed.innerHTML = '<div class="empty"><h3>Give your team a task</h3><p>Aisyah plans it, the team does the work, and you watch it happen in the office.</p><div class="chips">' +
+      ['Plan a booking website for my salon. Ask me questions first.','Design the database for a simple SaaS that tracks gym memberships.','Build a contact form with spam protection, then test and security-check it.']
+        .map(function(t){ return '<button class="chip" type="button">'+esc(t)+'</button>'; }).join('') + '</div></div>';
+    return;
+  }
+  feed.innerHTML = state.msgs.map(msgHTML).join('');
+  feed.scrollTop = feed.scrollHeight;
+}
+function updateMsg(m){
+  var el = document.getElementById(m.id);
+  var nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
+  if (!el){ renderFeed(); return; }
+  var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m);
+  var wasOpen = el.querySelector('details.think') && el.querySelector('details.think').open;
+  el.replaceWith(tmp.firstChild);
+  if (wasOpen === false){ var d = document.getElementById(m.id).querySelector('details.think'); if (d) d.open = false; }
+  if (nearBottom) feed.scrollTop = feed.scrollHeight;
+}
+function addMsg(m){ m.id = m.id || newId(); m.time = m.time || clock(); state.msgs.push(m); if (state.msgs.length === 1) renderFeed(); else { var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); feed.appendChild(tmp.firstChild); feed.scrollTop = feed.scrollHeight; } return m; }
+
+var resultsEl = document.getElementById('results');
+function renderResults(){
+  document.getElementById('resCount').textContent = state.results.length ? ' (' + state.results.length + ')' : '';
+  if (!state.results.length){ resultsEl.innerHTML = '<div class="empty"><h3>No results yet</h3><p>Code, database plans, test reports and security checks from your team will collect here.</p></div>'; return; }
+  resultsEl.innerHTML = state.results.slice().reverse().map(function(r){
+    return '<article class="card"><div class="card-head">'+avatar(r.who)+'<div><b>'+esc(TEAM[r.who].name)+' · '+esc(TEAM[r.who].role)+'</b><span>'+esc(r.task)+'</span></div><button class="copy" type="button" data-copyres="'+r.id+'">Copy</button></div><div class="rich">'+rich(r.result)+'</div></article>';
+  }).join('');
+}
+
+// ---------- tabs, copy, clear ----------
+var tabChat = document.getElementById('tabChat'), tabRes = document.getElementById('tabRes');
+function showTab(res){
+  tabChat.setAttribute('aria-selected', String(!res)); tabRes.setAttribute('aria-selected', String(res));
+  feed.hidden = res; resultsEl.hidden = !res;
+}
+tabChat.onclick = function(){ showTab(false); };
+tabRes.onclick = function(){ renderResults(); showTab(true); };
+
+function copyText(text, btn){
+  var done = function(){ var o = btn.textContent; btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = o; }, 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+  else fallback();
+  function fallback(){ var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch(e) { btn.textContent = 'Select and copy manually'; } t.remove(); }
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-copy]'), r = e.target.closest('[data-copyres]'), chip = e.target.closest('.chip');
+  if (b){ var m = state.msgs.find(function(x){ return x.id === b.dataset.copy; }); if (m) copyText(m.result, b); }
+  if (r){ var x = state.results.find(function(y){ return y.id === r.dataset.copyres; }); if (x) copyText(x.result, r); }
+  if (chip){ box.value = chip.textContent; box.focus(); }
+});
+document.getElementById('clear').onclick = function(){
+  if (busy) return;
+  state = { msgs: [], results: [] }; lastRun = null; save(); renderFeed(); renderResults(); resetStatuses(); setBoard(null);
+};
+
+// ---------- board ----------
+function setBoard(task, steps, current){
+  document.getElementById('boardTask').textContent = task || 'No task yet. Type one in the team chat.';
+  var ol = document.getElementById('boardSteps');
+  ol.innerHTML = (steps || []).map(function(s, i){
+    var cls = current == null ? '' : (i < current ? 'did' : (i === current ? 'now' : ''));
+    return '<li class="'+cls+'">'+(i+1)+'. '+esc(TEAM[s.agent].name)+'</li>';
+  }).join('');
+}
+
+// ---------- Claude ----------
+var sample = null, busy = false, ctl = null;
+var notice = document.getElementById('notice');
+function say(text){ notice.textContent = text; notice.classList.toggle('on', !!text); }
+if (window.claude && window.claude.use){
+  window.claude.use('sample').then(function(s){ sample = s; if (!s) say('Your team needs Claude to work, and it is not available in this view. Open this page in Claude to bring them to life.'); });
+} else {
+  say('Your team needs Claude to work. Open this page in Claude to bring them to life.');
+}
+function errText(e){
+  switch(e && e.code){
+    case 'cancelled': return 'Stopped.';
+    case 'not_granted': case 'sampling_disabled': case 'not_declared': case 'capability_disabled':
+      return 'The team needs your permission to use Claude. Allow it when asked, or check this page\'s permissions.';
+    case 'rate_limited': return 'Claude is busy or you have reached a usage limit. Wait a little, then send the task again.';
+    case 'session_expired': return 'Your Claude session ended. Sign in again, then resend the task.';
+    case 'refused': return 'Claude declined this step. Press Try again, or reword the task.';
+    case 'invalid_json': return 'Aisyah\'s plan came back unreadable. Send the task again.';
+    case 'prompt_too_large': return 'This is too much work for one go. Split the task into smaller parts.';
+    default: return 'Could not reach Claude. Send the task again.';
+  }
+}
+
+function history(){
+  return state.msgs.filter(function(m){ return (m.who === 'you' || m.who === 'leader') && m.text && !m.error; })
+    .slice(-10).map(function(m){ return (m.who === 'you' ? 'Owner' : 'Aisyah (Project Leader)') + ': ' + m.text; }).join('\n');
+}
+function parseSections(t){
+  function get(h){
+    var re = new RegExp('#{2,3}\\s*' + h + '\\s*\\n([\\s\\S]*?)(?=\\n#{2,3}\\s*(?:THINKING|APPROACH|MESSAGE|RESULT)\\b|$)', 'i');
+    var m = t.match(re); return m ? m[1].trim() : '';
+  }
+  return { thinking: get('(?:APPROACH|THINKING)'), message: get('MESSAGE'), result: get('RESULT') };
+}
+var NOTE = 'The team works only in this chat. It cannot see or change the owner\'s real code repository; it produces plans, code and checks that the owner will paste into Claude Code.';
+
+function planPrompt(task, hist){
+  return 'You are Aisyah, the Project Leader of a small AI software team that builds websites, mobile apps and SaaS products for the owner, who is not a full-time engineer. ' + TEAM.leader.prompt + '\n' +
+    'Your teammates: developer (Ravi, writes app code), database-manager (Mei, schemas, migrations, data safety), tester (Daniel, tests and bug reports), security-checker (Farid, security review, can block release).\n' + NOTE + '\n\n' +
+    'Conversation so far:\n' + (hist || '(none)') + '\n\nThe owner\'s new message:\n"""' + task + '"""\n\n' +
+    'Decide what to do:\n- Small talk, or a question you can answer yourself: answer it and return an empty plan.\n' +
+    '- Too vague to build well (platform, main users or must-have features unclear): ask at most 3 short questions and return an empty plan.\n' +
+    '- Otherwise plan 1 to 5 steps. Order: database-manager first only if stored data is involved, then developer, then tester, then security-checker. Keep the first version small.\n\n' +
+    'Reply with only JSON in this shape:\n{"approach": ["short note on how you will handle this"], "reply": "what you say to the owner, 1-3 friendly sentences", "questions": ["short question"], "plan": [{"agent": "developer", "instruction": "specific instruction for this teammate"}]}';
+}
+function agentPrompt(id, task, hist, plan, step, outputs){
+  var c = TEAM[id];
+  return 'You are helping the owner as ' + c.name + ', the ' + c.role + ' on a small AI software team that builds websites, mobile apps and SaaS products for the owner.\n' + c.prompt + '\n' + NOTE + '\n\n' +
+    'Conversation with the owner:\n' + (hist || '(none)') + '\n\nThe current request:\n"""' + task + '"""\n\n' +
+    'Project Leader\'s plan:\n' + plan.map(function(s, i){ return (i+1) + '. ' + TEAM[s.agent].role + ': ' + s.instruction; }).join('\n') + '\n\n' +
+    'Your assignment (step ' + (plan.indexOf(step)+1) + '): ' + step.instruction + '\n\n' +
+    'Work already done by teammates:\n' + (outputs.length ? outputs.map(function(o){ return '[' + TEAM[o.who].role + '] ' + o.message + '\n' + o.result.slice(0, 5000); }).join('\n\n') : '(nothing yet)') + '\n\n' +
+    'Write your answer in exactly these three sections, with these headings on their own lines:\n### APPROACH\n2-5 short bullet points on how you will tackle your assignment, in plain words.\n### MESSAGE\n1-3 friendly sentences to the team chat, in first person.\n### RESULT\nYour deliverable in Markdown: code in fenced blocks with file names, a schema, test cases, or findings. Focused and complete enough to paste into Claude Code. Keep it under about 150 lines; for a mockup, one self-contained HTML file is fine.';
+}
+function summaryPrompt(task, outputs){
+  return 'You are Aisyah, the Project Leader. The team just finished work on:\n"""' + task + '"""\n\nWhat each teammate delivered:\n' +
+    outputs.map(function(o){ return '[' + TEAM[o.who].role + '] ' + o.message + '\nResult excerpt:\n' + o.result.slice(0, 2500); }).join('\n\n') +
+    '\n\nWrite a short report to the owner in exactly two sections, with these headings on their own lines:\n### APPROACH\n2-4 bullet points: your review of the work (did tests pass, any security blockers).\n### MESSAGE\n3-6 sentences in plain words: what was made, the test and security verdicts, open risks, and the next step. Mention they can copy results from the Results tab into Claude Code.';
+}
+
+async function stream(m, who, prompt){
+  var r = await sample(prompt, { signal: ctl.signal, cache: false, onText: function(u){
+    var s = parseSections(u.text);
+    setStatus(who, s.message || s.result ? 'writing' : 'thinking');
+    m.thinking = s.thinking || m.thinking; m.text = s.message; m.resultLen = s.result.length;
+    updateMsg(m);
+  }});
+  var s = parseSections(r.text);
+  if (!s.thinking && !s.message && !s.result) s.message = r.text.trim();
+  return s;
+}
+
+var lastRun = null;
+
+async function runTask(task){
+  var hist = history();
+  addMsg({ who: 'you', text: task });
+  resetStatuses();
+  setBoard(task, [], null);
+  begin();
+  var lm = addMsg({ who: 'leader', text: '', streaming: true });
+  setStatus('leader', 'thinking');
+  try {
+    var p = await sample.json(planPrompt(task, hist), { signal: ctl.signal, cache: false });
+    var plan = (p && Array.isArray(p.plan) ? p.plan : []).filter(function(s){ return s && TEAM[s.agent] && s.agent !== 'leader' && s.instruction; }).slice(0, 5);
+    var qs = p && Array.isArray(p.questions) ? p.questions.filter(Boolean).slice(0, 3) : [];
+    var ap = p && (p.approach || p.thinking); lm.thinking = Array.isArray(ap) ? ap.map(function(t){ return '• ' + t; }).join('\n') : String(ap || '');
+    lm.text = String((p && p.reply) || 'Here is the plan.') + (!plan.length && qs.length ? '\n\n' + qs.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n') : '');
+    lm.streaming = false; updateMsg(lm); save();
+    if (!plan.length){ setStatus('leader', 'idle'); finish(); return; }
+    lastRun = { task: task, hist: hist, plan: plan, outputs: [], index: 0, summarized: false };
+  } catch (e) {
+    fail(lm, 'leader', e, false);
+    finish(); return;
+  }
+  await runSteps(lastRun);
+}
+
+async function runSteps(run){
+  if (!busy) begin();
+  setStatus('leader', 'waiting');
+  var current = null, who = 'leader';
+  try {
+    for (; run.index < run.plan.length; run.index++){
+      var step = run.plan[run.index];
+      setBoard(run.task, run.plan, run.index);
+      who = step.agent; setStatus(who, 'thinking');
+      current = addMsg({ who: who, text: '', streaming: true });
+      var s = await stream(current, who, agentPrompt(who, run.task, run.hist, run.plan, step, run.outputs));
+      current.streaming = false; current.thinking = s.thinking; current.text = s.message || 'Done. My result is attached.'; current.result = s.result; delete current.resultLen;
+      updateMsg(current);
+      if (s.result){ state.results.push({ id: newId(), who: who, task: run.task, result: s.result }); renderResults(); }
+      run.outputs.push({ who: who, message: current.text, result: s.result || '' });
+      setStatus(who, 'done'); save();
+    }
+    setBoard(run.task, run.plan, run.plan.length);
+    who = 'leader'; setStatus('leader', 'thinking');
+    current = addMsg({ who: 'leader', text: '', streaming: true });
+    var sum = await stream(current, 'leader', summaryPrompt(run.task, run.outputs));
+    current.streaming = false; current.thinking = sum.thinking; current.text = sum.message || 'All done.'; updateMsg(current);
+    setStatus('leader', 'done'); run.summarized = true; lastRun = null; save();
+  } catch (e) {
+    fail(current, who, e, true);
+  } finally {
+    finish();
+  }
+}
+
+function fail(m, who, e, canResume){
+  if (m){
+    m.streaming = false;
+    if (e && e.text && !m.text){ var ps = parseSections(e.text); m.text = ps.message || ''; m.thinking = m.thinking || ps.thinking; }
+    if (!m.text && !m.thinking){ var i = state.msgs.indexOf(m); if (i >= 0) state.msgs.splice(i, 1); }
+  }
+  var code = e && e.code ? e.code : 'unknown';
+  var resumable = canResume && lastRun && code !== 'not_granted' && code !== 'sampling_disabled';
+  addMsg({ who: who, error: true, code: code, retry: resumable ? TEAM[who].name : '',
+    text: errText(e) + (code !== 'cancelled' ? ' (reason: ' + code + (e && e.message ? ', ' + String(e.message).slice(0, 140) : '') + ')' : '') });
+  renderFeed(); setStatus(who, 'idle'); save();
+}
+
+function begin(){ busy = true; setBusy(true); say(''); ctl = new AbortController(); }
+function finish(){ busy = false; setBusy(false); ctl = null; }
+
+document.addEventListener('click', function(e){
+  var r = e.target.closest('[data-retry]');
+  if (!r || busy || !lastRun || !sample) return;
+  r.disabled = true;
+  runSteps(lastRun);
+});
+
+// ---------- composer ----------
+var form = document.getElementById('form'), box = document.getElementById('box'), sendBtn = document.getElementById('send');
+function setBusy(b){ sendBtn.textContent = b ? 'Stop' : 'Send'; sendBtn.classList.toggle('stop', b); box.disabled = b; }
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  if (busy){ if (ctl) ctl.abort(); return; }
+  var t = box.value.trim(); if (!t) return;
+  if (!sample){ say('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.'); return; }
+  box.value = ''; showTab(false); runTask(t);
+});
+box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+
+renderFeed(); renderResults();
+})();
+</script>
+</body>
+</html>
