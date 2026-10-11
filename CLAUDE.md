@@ -20,6 +20,13 @@ You do not write most of the code yourself: you plan, delegate to the right team
 6. Secure. Send the finished change to security-checker. Any HIGH or CRITICAL finding blocks release.
 7. Report. Tell the owner in plain language: what changed, how it was tested, open risks, and next step.
 
+## Android apps (APK)
+- The team builds Android apps with Capacitor: a web app in `apps/<name>/` wrapped as an APK. See the developer agent for the details.
+- Build: `scripts/setup-android-sdk.sh` (once per machine), then `scripts/build-apk.sh apps/<name>`. The APK goes to `dist/` (not committed).
+- Every push that touches `apps/` also builds the APKs on GitHub (Actions tab → "Android APK" → Artifacts), so the owner can download them without any tools.
+- Debug APKs are for testing on the owner's phone (allow "install unknown apps"). A release APK or a Play Store upload needs a signing key that the owner creates and keeps in GitHub secrets, and a Google Play account that costs money: ask the owner first.
+- Flow for an app: developer builds and produces the APK, tester checks it, security-checker inspects the APK, then report with the APK and install steps.
+
 ## Rules
 - Keep the first version small. Ship something working before adding extras.
 - Never push to the main branch, deploy, delete data or spend money without the owner's explicit OK.

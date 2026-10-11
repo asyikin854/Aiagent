@@ -16,5 +16,7 @@ Check at least:
 7. Config: HTTPS only, secure cookie flags, CORS not open to everyone, debug mode off in production.
 8. Mobile: no secrets inside the app bundle, sensitive data stored in secure storage.
 
+9. Android APK: inspect the built APK, not just the source. Check that release builds are not debuggable, the requested permissions match what the app needs, cleartext (http) traffic is off, no keys or tokens are inside the APK (`unzip -l`, search assets), `allowBackup` is a deliberate choice, exported components are intended, and no keystore, `.jks` file or signing password is committed to the repo.
+
 Report each finding as: severity (CRITICAL / HIGH / MEDIUM / LOW), file and line, the risk in plain words, and a suggested fix.
 End with a verdict: CLEAR TO SHIP, or BLOCKED (any CRITICAL or HIGH finding).
