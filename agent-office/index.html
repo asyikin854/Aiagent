@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#E9EDF4; --panel:#FFFFFF; --panel-2:#F4F6FA; --line:#D9DEE8; --ink:#1F2433; --muted:#5A6275;
+  --primary:#3F4FD8; --primary-ink:#FFFFFF; --accent:#F5A524; --ok:#1E8A55; --bad:#B4332E;
+  --wall:#34425F; --wall-2:#3D4C6C; --floor:#D6B188; --floor-line:#C79F74; --board:#F7F8FB;
+  --display:'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --body:'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#141824; --panel:#1C2130; --panel-2:#232939; --line:#30374A; --ink:#E9ECF3; --muted:#A3AABB;
+    --primary:#6F7CFF; --primary-ink:#0E1120; --ok:#4CC98A; --bad:#FF7A72; --board:#E9ECF3;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#141824; --panel:#1C2130; --panel-2:#232939; --line:#30374A; --ink:#E9ECF3; --muted:#A3AABB;
+  --primary:#6F7CFF; --primary-ink:#0E1120; --ok:#4CC98A; --bad:#FF7A72; --board:#E9ECF3;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+button,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.app{max-width:1440px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:32px;line-height:1.05}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.ghost{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500}
+.ghost:hover{background:var(--panel-2)}
+
+.main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(340px,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+
+/* the office */
+.room{position:relative;border-radius:22px;overflow:hidden;background:var(--floor);
+  background-image:repeating-linear-gradient(90deg,transparent 0 118px,var(--floor-line) 118px 120px);
+  padding:0 16px 18px;color:#1F2433}
+.wall{position:absolute;left:0;right:0;top:0;height:230px;background:var(--wall)}
+.wall::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:#29344D}
+.window{position:absolute;right:26px;top:22px;width:190px;height:120px;border-radius:10px;background:#8EC7E8;border:6px solid #E8EBF2;overflow:hidden}
+.window svg{display:block;width:100%;height:100%}
+.row1{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;padding-top:22px}
+.board{align-self:start;margin-top:4px;background:var(--board);color:#1F2433;border-radius:14px;border:6px solid #C9CFDB;padding:14px 16px;min-height:150px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.board h2{margin:0 0 6px;font-family:var(--display);font-size:20px;line-height:1.1}
+.board .task{font-size:14px;line-height:1.4;max-height:3.6em;overflow:hidden}
+.steps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.steps li{font-size:12px;padding:3px 9px;border-radius:99px;background:#E3E7EF;color:#3A4256}
+.steps li.now{background:var(--accent);color:#1F2433;font-weight:600}
+.steps li.did{background:#CDEBDA;color:#145C39}
+.row2{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}
+@media (max-width:1180px){.row2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.row1{grid-template-columns:minmax(0,1fr)}.window{display:none}}
+
+.desk{position:relative;display:flex;flex-direction:column;align-items:stretch}
+.desk svg.char{display:block;width:100%;height:auto;overflow:visible}
+.desk{cursor:pointer}
+/* coffee break: stand up, walk off for coffee, come back with a mug, sit down */
+.heldMug{opacity:0}
+.desk.break .person{animation:coffeeWalk 7s ease-in-out both}
+.desk.break .bob{animation:walkBob .34s ease-in-out infinite alternate}
+.desk.break .heldMug{animation:mugShow 7s linear both}
+.leg{transform-box:fill-box;transform-origin:50% 0}
+.desk.break .legL{animation:legSwing .34s ease-in-out infinite alternate}
+.desk.break .legR{animation:legSwing .34s ease-in-out infinite alternate-reverse}
+@keyframes legSwing{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.desk.break .bubble{display:none}
+.desk.break .dot{background:#8A5E3A}
+@keyframes coffeeWalk{0%{transform:translate(0,0);opacity:1}8%{transform:translate(0,-18px)}12%{transform:translate(4px,-18px)}34%{transform:translate(120px,-18px);opacity:1}40%{transform:translate(150px,-18px);opacity:0}60%{transform:translate(150px,-18px);opacity:0}66%{transform:translate(120px,-18px);opacity:1}88%{transform:translate(0,-18px)}96%,100%{transform:translate(0,0);opacity:1}}
+@keyframes walkBob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+@keyframes mugShow{0%,60%{opacity:0}62%,94%{opacity:1}100%{opacity:0}}
+.plate{margin:-4px auto 0;background:#FFFDF8;border-radius:10px;padding:6px 12px;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.18);min-width:72%}
+.plate b{display:block;font-family:var(--display);font-size:17px;line-height:1.1}
+.plate span{display:block;font-size:12px;color:#4A5266}
+.plate .status{display:inline-flex;align-items:center;gap:6px;margin-top:3px;font-size:12px;font-weight:600;color:#3A4256}
+.dot{width:8px;height:8px;border-radius:50%;background:#9AA2B4}
+.desk[data-s="thinking"] .dot,.desk[data-s="writing"] .dot{background:var(--accent)}
+.desk[data-s="done"] .dot{background:#2FA36B}
+.bubble{position:absolute;top:6%;right:16%;background:#FFFFFF;border-radius:14px;padding:7px 10px;display:none;gap:4px;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.bubble::after{content:"";position:absolute;left:10px;bottom:-6px;width:12px;height:12px;background:#FFFFFF;transform:rotate(45deg)}
+.bubble i{width:7px;height:7px;border-radius:50%;background:#3A4256;display:block}
+.desk[data-s="thinking"] .bubble,.desk[data-s="writing"] .bubble{display:flex}
+.desk.lead .plate{min-width:60%}
+
+.eyes{transform-box:fill-box;transform-origin:center;animation:blink 5.5s infinite}
+.arm{transform-box:fill-box;transform-origin:50% 0}
+.desk[data-s="writing"] .armL{animation:tap .32s infinite alternate}
+.desk[data-s="writing"] .armR{animation:tap .32s .16s infinite alternate}
+.desk[data-s="thinking"] .head{animation:ponder 1.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+.lid{transition:fill .3s}
+.desk[data-s="writing"] .glow,.desk[data-s="thinking"] .glow{opacity:.9}
+.glow{opacity:0;transition:opacity .3s}
+.bubble i{animation:bob 1s infinite}
+.bubble i:nth-child(2){animation-delay:.15s}.bubble i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes tap{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+@keyframes ponder{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-3px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.eyes,.arm,.head,.bubble i,.person,.bob,.heldMug,.leg{animation:none!important}}
+
+/* team chat */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.phead{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.phead h2{margin:0;font-family:var(--display);font-size:21px;line-height:1.1}
+.phead span{font-size:12px;color:var(--muted)}
+.feed{height:560px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:980px){.feed{height:60vh}}
+.empty{margin:auto 0;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center;padding:12px}
+.empty h3{margin:0;color:var(--ink);font-family:var(--display);font-size:22px}
+.empty p{margin:0;max-width:44ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{min-height:40px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;text-align:left}
+.chip:hover{border-color:var(--primary)}
+
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.you{flex-direction:row-reverse}
+.ava{flex:0 0 40px;width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--wall)}
+.ava svg{display:block;width:100%;height:100%}
+.ava.me{display:flex;align-items:center;justify-content:center;background:var(--primary);color:var(--primary-ink);font-weight:600;font-size:13px}
+.body{min-width:0;max-width:86%;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.msg.you .body{align-items:flex-end}
+.who{font-size:13px;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600}
+.text{background:var(--panel-2);border-radius:4px 14px 14px 14px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.you .text{background:var(--primary);color:var(--primary-ink);border-radius:14px 4px 14px 14px}
+.msg.ask .text{background:var(--panel);border:2px solid var(--accent)}
+.tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7A4A00;background:#FDE7BF;border-radius:99px;padding:2px 8px}
+.msg.err .text{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.msg.done .text{border-left:4px solid var(--ok)}
+.live{font-size:13px;color:var(--muted);font-style:italic}
+.copy{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;font-weight:500}
+
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
+.composer .rowc{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-width:0;min-height:48px;max-height:160px;resize:vertical;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2)}
+.send{min-height:48px;padding:0 18px;border-radius:14px;border:0;background:var(--primary);color:var(--primary-ink);font-weight:600;cursor:pointer}
+.send.stop{background:var(--bad);color:#FFFFFF}
+.hint{font-size:12px;color:var(--muted)}
+.notice{margin:0 12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:13px;display:none}
+.notice.on{display:block}
+
+/* projects */
+.projects{display:flex;flex-direction:column;gap:12px}
+.projects h2{margin:0;font-family:var(--display);font-size:24px;line-height:1.1}
+.projects .sub{margin:0;color:var(--muted);font-size:14px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
+.proj{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.proj .thumb{display:block;aspect-ratio:16/10;max-width:100%;background:var(--panel-2);border-bottom:1px solid var(--line);overflow:hidden;cursor:pointer;padding:0;border-width:0 0 1px;width:100%}
+.proj .thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.thumb.art{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--wall);color:#E9ECF3}
+.thumb.art svg{width:64px;height:64px}
+.thumb.art span{font-family:var(--display);font-size:18px;font-weight:700;max-width:80%;text-align:center;line-height:1.15}
+.proj.building .thumb.art{background:repeating-linear-gradient(135deg,var(--wall) 0 18px,var(--wall-2) 18px 36px);cursor:default}
+.proj .pbody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.proj h3{margin:0;font-family:var(--display);font-size:19px;line-height:1.15;text-wrap:balance}
+.proj p{margin:0;font-size:13.5px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.kind{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--panel-2);color:var(--ink)}
+.crew{display:flex;flex-wrap:wrap;gap:6px}
+.crew span{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px 3px 3px;border-radius:99px;background:var(--panel-2)}
+.crew .ava{flex-basis:22px;width:22px;height:22px}
+.verdicts{display:flex;flex-wrap:wrap;gap:6px}
+.verdicts span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;border:1px solid currentColor}
+.verdicts .ok{color:var(--ok)} .verdicts .bad{color:var(--bad)} .verdicts .wait{color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.open{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--primary);color:var(--primary-ink);font-weight:600;text-decoration:none;cursor:pointer}
+.btn2{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-weight:500;cursor:pointer}
+.btn2:hover{background:var(--panel-2)}
+.btn2.danger{color:var(--bad)}
+
+/* project viewer */
+.viewer{width:min(1200px,calc(100vw - 32px));height:min(900px,calc(100vh - 32px));max-width:none;max-height:none;padding:0;border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);overflow:hidden}
+.viewer[open]{display:flex;flex-direction:column}
+.viewer::backdrop{background:rgba(15,18,30,.55)}
+.viewer .vbar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.viewer .vbar b{flex:1;font-family:var(--display);font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewer .stage{flex:1;display:flex;min-height:0;background:var(--panel-2)}
+.viewer .stage iframe{flex:1;width:100%;border:0;background:#FFFFFF}
+.viewer.mobile .stage{align-items:center;justify-content:center;padding:16px;overflow:auto}
+.phone{width:390px;max-width:100%;height:100%;max-height:820px;border:12px solid #1B1F2A;border-radius:42px;overflow:hidden;background:#FFFFFF;display:flex;flex-shrink:0;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.viewer .vnote{margin:0;padding:8px 16px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.confirm{max-width:min(420px,calc(100vw - 32px));border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:18px}
+.confirm::backdrop{background:rgba(15,18,30,.55)}
+.confirm p{margin:0 0 14px}
+.confirm .cacts{display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--page);padding:10px 16px;border-radius:12px;font-size:14px;z-index:10;max-width:calc(100vw - 32px)}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Agent Office</h1>
+      <p>Your AI team for websites, mobile apps and SaaS</p>
+    </div>
+    <button class="ghost" id="clear" type="button">Clear chat</button>
+  </header>
+
+  <div class="main">
+    <section class="room" aria-label="The office">
+      <div class="wall" aria-hidden="true">
+        <div class="window"><svg viewBox="0 0 190 120" preserveAspectRatio="none"><rect width="190" height="120" fill="#9BD0EE"/><circle cx="150" cy="30" r="14" fill="#FFE29A"/><rect x="0" y="70" width="28" height="50" fill="#5E7BA6"/><rect x="30" y="52" width="22" height="68" fill="#4E6A94"/><rect x="56" y="78" width="30" height="42" fill="#6B88B2"/><rect x="90" y="60" width="20" height="60" fill="#4E6A94"/><rect x="114" y="82" width="34" height="38" fill="#5E7BA6"/><rect x="152" y="66" width="38" height="54" fill="#4E6A94"/><line x1="95" y1="0" x2="95" y2="120" stroke="#E8EBF2" stroke-width="5"/></svg></div>
+      </div>
+      <div class="row1">
+        <div class="board" aria-live="polite">
+          <h2 id="boardTitle">Task board</h2>
+          <div class="task" id="boardTask">No task yet. Type one in the team chat.</div>
+          <ol class="steps" id="boardSteps"></ol>
+        </div>
+        <div id="leadDesk"></div>
+      </div>
+      <div class="row2" id="staff"></div>
+    </section>
+
+    <section class="panel" aria-label="Team chat">
+      <div class="phead"><h2>Team chat</h2><span>What the team is doing, and what they need from you</span></div>
+      <div class="feed" id="feed" aria-live="polite"></div>
+      <p class="notice" id="notice"></p>
+      <form class="composer" id="form">
+        <div class="rowc">
+          <label for="box" class="sr">Give your team a task, or answer their question</label>
+          <textarea id="box" rows="2" placeholder="Give your team a task, or answer their question…"></textarea>
+          <button class="send" id="send" type="submit">Send</button>
+        </div>
+        <span class="hint">Each task uses your own Claude usage. Finished apps appear below in Projects.</span>
+      </form>
+    </section>
+  </div>
+
+  <section class="projects" aria-labelledby="projTitle">
+    <h2 id="projTitle">Projects done by the team</h2>
+    <p class="sub" id="projSub">Web and mobile apps the team has built and checked. Open one to use it.</p>
+    <div class="proj-grid" id="projects"></div>
+  </section>
+
+  <dialog class="viewer" id="viewer" aria-labelledby="viewerTitle">
+    <div class="vbar"><b id="viewerTitle">Project</b><span id="viewerActs" class="actions" style="margin:0;padding:0"></span><button class="ghost" id="viewerClose" type="button">Close</button></div>
+    <div class="stage" id="stage"></div>
+    <p class="vnote" id="viewerNote"></p>
+  </dialog>
+
+  <dialog class="confirm" id="confirm" aria-labelledby="confirmText">
+    <p id="confirmText">Delete this project?</p>
+    <div class="cacts"><button class="btn2" id="confirmNo" type="button">Cancel</button><button class="btn2 danger" id="confirmYes" type="button">Delete</button></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ---------- the team ----------
+var TEAM = {
+  leader: { name:'Aisyah', role:'Project Leader', skin:'#E2AE88', hair:'#2E9C8F', style:'hijab', shirt:'#2B3A67', acc:'', item:'papers', wallItem:'notes', lid:'#F5A524',
+    prompt:'You plan, delegate to the right teammate, and check the result. Keep the first version small. Never deploy, delete data or spend money without the owner\'s OK. The team can make Android apps (APK) with Capacitor; a Play Store release needs the owner\'s signing key and Google Play account, so ask first.' },
+  developer: { name:'Ravi', role:'Developer', skin:'#8D5B3E', hair:'#1E1A19', style:'curly', shirt:'#4A5BE0', acc:'headset', item:'mug', wallItem:'poster', lid:'#7FD6FF',
+    prompt:'You turn an agreed plan into working code. Follow the existing stack if one is given; otherwise pick a simple, popular one and say why. Make the smallest change that meets the goal. Web: responsive, phone first. Mobile: handle offline and small screens. SaaS: every query respects which user or organization owns the data. Validate input on the server. Read secrets from environment variables, never hard-code them. Android apps (APK): use Capacitor by default: a web app in apps/<name>/www wrapped for Android, with package.json, capacitor.config.json (appId, appName, webDir www) and a build script; bundle everything for offline use, request only needed permissions, never put signing keys in the repo. The owner builds the APK in Claude Code with scripts/build-apk.sh apps/<name>, or downloads it from the GitHub Actions "Android APK" run. End with how to run it and what the tester should focus on.' },
+  'database-manager': { name:'Mei', role:'Database Manager', skin:'#F0C8A4', hair:'#2B2220', style:'bun', shirt:'#7A4FD0', acc:'glasses', item:'plant', wallItem:'shelf', lid:'#C9B5FF',
+    prompt:'You protect the data and keep it fast. Every change is a migration that can be applied and rolled back. Use clear names, correct types, primary and foreign keys, NOT NULL where required, created_at and updated_at. For SaaS, every customer table has an owner or organization column and access rules (for example row-level security). Add indexes for lookups and explain each. Parameterized queries only. Anything destructive needs the Project Leader\'s approval and a backup first. End with how to apply and roll back.' },
+  tester: { name:'Daniel', role:'Tester', skin:'#D9A27A', hair:'#4A3424', style:'cap', shirt:'#2FA36B', acc:'', item:'checklist', wallItem:'clock', lid:'#9BE8C1',
+    prompt:'You find problems before real users do. Write tests for the normal path, empty and invalid input, very long input, missing permissions, slow or failed network, and (for SaaS) one user trying to see another user\'s data. You do not fix app code; report each bug with steps, expected, actual and severity. For Android apps, also give an on-phone checklist: installs, opens, works offline, back button, rotation, keyboard does not cover fields; and check app id, version and permissions of the APK. End with a clear verdict: PASS or FAIL.' },
+  'security-checker': { name:'Farid', role:'Security Checker', skin:'#C68B62', hair:'#191919', style:'short', shirt:'#3C4454', acc:'glasses', item:'lock', wallItem:'shield', lid:'#FFB4AE',
+    prompt:'You check and improve security: find the problems, fix them yourself with the smallest safe change, then confirm the fix. Only change code for security, never features, layout or wording. Check secrets in code, login and sessions, authorization (can one user reach another\'s data), injection (SQL, command, XSS), input and upload limits, rate limiting, dependencies, HTTPS and cookie settings, CORS, debug mode, and for mobile no secrets in the app bundle; for Android APKs also release builds not debuggable, only needed permissions, cleartext traffic off, no keystore or signing password in the repo. Report each finding with severity (CRITICAL, HIGH, MEDIUM, LOW), where, the risk in plain words, and whether you FIXED it. End with a verdict: CLEAR TO SHIP, or BLOCKED if any CRITICAL or HIGH is still open.' }
+};
+var STAFF = ['developer','database-manager','tester','security-checker'];
+
+// ---------- drawing ----------
+function hairBack(c){
+  if (c.style === 'hijab') return '<path d="M84 90 Q84 46 120 46 Q156 46 156 90 L162 128 Q120 142 78 128 Z" fill="'+c.hair+'"/>';
+  return '';
+}
+function hairFront(c){
+  var h = c.hair;
+  switch(c.style){
+    case 'curly': return '<g fill="'+h+'"><circle cx="99" cy="68" r="10"/><circle cx="108" cy="58" r="11"/><circle cx="121" cy="54" r="12"/><circle cx="134" cy="58" r="11"/><circle cx="142" cy="68" r="10"/></g>';
+    case 'bun': return '<path d="M95 80 Q95 54 120 54 Q145 54 145 80 Q138 64 120 64 Q102 64 95 80Z" fill="'+h+'"/><circle cx="120" cy="49" r="10" fill="'+h+'"/>';
+    case 'cap': return '<path d="M95 76 Q95 54 120 54 Q145 54 145 76 Q138 68 120 68 Q102 68 95 76Z" fill="'+h+'"/><path d="M94 72 Q96 50 120 50 Q144 50 146 72 Z" fill="#F5A524"/><rect x="118" y="66" width="40" height="8" rx="4" fill="#E0901A"/>';
+    case 'short': return '<path d="M95 80 Q94 54 120 53 Q146 54 145 80 Q140 62 120 63 Q100 62 95 80Z" fill="'+h+'"/>';
+    default: return '';
+  }
+}
+function accessory(c){
+  if (c.acc === 'glasses') return '<g fill="none" stroke="#1F2433" stroke-width="2"><circle cx="111" cy="83" r="6.5"/><circle cx="129" cy="83" r="6.5"/><line x1="117.5" y1="83" x2="122.5" y2="83"/></g>';
+  if (c.acc === 'headset') return '<path d="M93 82 Q93 46 120 46 Q147 46 147 82" fill="none" stroke="#2A3147" stroke-width="4"/><rect x="88" y="76" width="9" height="15" rx="4" fill="#2A3147"/><rect x="143" y="76" width="9" height="15" rx="4" fill="#2A3147"/><path d="M147 88 Q146 100 132 100" fill="none" stroke="#2A3147" stroke-width="3"/>';
+  return '';
+}
+function deskItem(c){
+  switch(c.item){
+    case 'mug': return '<rect x="172" y="132" width="16" height="20" rx="3" fill="#F2F4F8"/><path d="M188 137 q8 0 8 6 q0 6 -8 6" fill="none" stroke="#F2F4F8" stroke-width="3"/><path d="M176 126 q3 -4 0 -8 M182 126 q3 -4 0 -8" stroke="#FFFFFF" stroke-width="2" fill="none" opacity=".6"/>';
+    case 'plant': return '<rect x="172" y="134" width="20" height="18" rx="3" fill="#C9724A"/><ellipse cx="176" cy="126" rx="6" ry="12" fill="#3FA266" transform="rotate(-20 176 126)"/><ellipse cx="188" cy="124" rx="6" ry="13" fill="#2F8A55" transform="rotate(18 188 124)"/><ellipse cx="182" cy="120" rx="5" ry="13" fill="#46B172"/>';
+    case 'papers': return '<rect x="40" y="140" width="34" height="12" rx="2" fill="#F7F8FB" transform="rotate(-6 57 146)"/><rect x="42" y="136" width="34" height="12" rx="2" fill="#FFFFFF"/><rect x="172" y="132" width="16" height="20" rx="3" fill="#F2F4F8"/>';
+    case 'checklist': return '<rect x="168" y="124" width="28" height="28" rx="3" fill="#FFFFFF"/><path d="M173 132 l3 3 l5 -6 M173 142 l3 3 l5 -6" stroke="#2FA36B" stroke-width="2" fill="none"/><line x1="184" y1="132" x2="192" y2="132" stroke="#9AA2B4" stroke-width="2"/><line x1="184" y1="142" x2="192" y2="142" stroke="#9AA2B4" stroke-width="2"/>';
+    case 'lock': return '<path d="M174 134 v-6 a8 8 0 0 1 16 0 v6" fill="none" stroke="#C9CFDB" stroke-width="4"/><rect x="170" y="134" width="24" height="18" rx="4" fill="#F5A524"/><circle cx="182" cy="142" r="2.5" fill="#1F2433"/>';
+  }
+  return '';
+}
+function wallItem(c){
+  switch(c.wallItem){
+    case 'notes': return '<rect x="26" y="20" width="22" height="22" fill="#FFE07A" transform="rotate(-6 37 31)"/><rect x="52" y="16" width="22" height="22" fill="#9EE6C3" transform="rotate(5 63 27)"/><rect x="38" y="44" width="22" height="22" fill="#FFB4C8"/>';
+    case 'poster': return '<rect x="24" y="16" width="44" height="56" rx="4" fill="#4A5BE0"/><path d="M36 36 l-6 8 l6 8 M56 36 l6 8 l-6 8 M49 32 l-6 24" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    case 'shelf': return '<rect x="20" y="58" width="56" height="5" rx="2" fill="#8A5E3A"/><g fill="#C9B5FF"><ellipse cx="36" cy="26" rx="10" ry="4"/><rect x="26" y="26" width="20" height="28"/><ellipse cx="36" cy="54" rx="10" ry="4"/></g><path d="M26 36 q10 4 20 0 M26 45 q10 4 20 0" stroke="#7A4FD0" stroke-width="2" fill="none"/><rect x="54" y="34" width="14" height="24" rx="2" fill="#FFE07A"/>';
+    case 'clock': return '<circle cx="46" cy="40" r="20" fill="#FFFFFF" stroke="#C9CFDB" stroke-width="4"/><path d="M46 40 V28 M46 40 H55" stroke="#1F2433" stroke-width="3" stroke-linecap="round"/>';
+    case 'shield': return '<path d="M46 16 L66 24 V42 Q66 60 46 70 Q26 60 26 42 V24 Z" fill="#3C4454" stroke="#FFB4AE" stroke-width="3"/><path d="M38 42 l6 6 l11 -12" stroke="#FFB4AE" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  }
+  return '';
+}
+function charSVG(c, viewBox, withWall){
+  var face = c.style === 'hijab'
+    ? '<ellipse cx="120" cy="84" rx="21" ry="24" fill="'+c.skin+'"/><path d="M99 72 Q120 56 141 72" stroke="#257E74" stroke-width="3" fill="none"/>'
+    : '<circle cx="120" cy="82" r="25" fill="'+c.skin+'"/>';
+  return '<svg class="char" viewBox="'+(viewBox||'0 0 240 200')+'" aria-hidden="true">' +
+    (withWall ? wallItem(c) : '') +
+    '<rect x="82" y="70" width="76" height="94" rx="20" fill="#26304A"/>' +
+    '<g class="person"><g class="bob">' +
+    '<g class="leg legL"><rect x="100" y="160" width="17" height="40" rx="8" fill="#2A3147"/><rect x="96" y="194" width="23" height="9" rx="4.5" fill="#1B1F2A"/></g>' +
+    '<g class="leg legR"><rect x="123" y="160" width="17" height="40" rx="8" fill="#2A3147"/><rect x="121" y="194" width="23" height="9" rx="4.5" fill="#1B1F2A"/></g>' +
+    hairBack(c) +
+    '<rect x="86" y="112" width="68" height="60" rx="28" fill="'+c.shirt+'"/>' +
+    '<rect x="113" y="98" width="14" height="18" rx="6" fill="'+c.skin+'"/>' +
+    '<g class="head">' + face + hairFront(c) +
+      '<g class="eyes"><ellipse cx="111" cy="83" rx="2.6" ry="3.2" fill="#1F2433"/><ellipse cx="129" cy="83" rx="2.6" ry="3.2" fill="#1F2433"/></g>' +
+      '<circle cx="104" cy="92" r="4" fill="#F28B8B" opacity=".35"/><circle cx="136" cy="92" r="4" fill="#F28B8B" opacity=".35"/>' +
+      '<path d="M113 94 Q120 99 127 94" stroke="#1F2433" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      accessory(c) +
+    '</g>' +
+    '<g class="arm armL"><rect x="80" y="126" width="18" height="30" rx="9" fill="'+c.shirt+'"/><circle cx="89" cy="155" r="7" fill="'+c.skin+'"/></g>' +
+    '<g class="arm armR"><rect x="142" y="126" width="18" height="30" rx="9" fill="'+c.shirt+'"/><circle cx="151" cy="155" r="7" fill="'+c.skin+'"/></g>' +
+    '<g class="heldMug"><rect x="145" y="134" width="14" height="16" rx="3" fill="#F2F4F8"/><path d="M159 138 q6 0 6 4 q0 4 -6 4" fill="none" stroke="#F2F4F8" stroke-width="2.5"/><rect x="147" y="136" width="10" height="3" rx="1" fill="#6B4226"/><path d="M149 130 q2 -3 0 -6 M154 130 q2 -3 0 -6" stroke="#FFFFFF" stroke-width="1.6" fill="none" opacity=".7"/></g>' +
+    '</g></g>' +
+    '<rect x="24" y="152" width="192" height="12" rx="4" fill="#9A6A43"/><rect x="34" y="164" width="172" height="36" fill="#7A5233"/>' +
+    '<path class="glow" d="M92 116 L148 116 L170 152 L70 152 Z" fill="'+c.lid+'" opacity="0" style="mix-blend-mode:screen"/>' +
+    '<path class="lid" d="M93 118 H147 L151 152 H89 Z" fill="#D7DCE6"/><circle cx="120" cy="135" r="5" fill="'+c.lid+'"/>' +
+    '<rect x="80" y="150" width="80" height="4" rx="2" fill="#AEB6C6"/>' +
+    deskItem(c) +
+  '</svg>';
+}
+function avatar(id){
+  if (id === 'you') return '<div class="ava me" aria-hidden="true">You</div>';
+  return '<div class="ava" aria-hidden="true">' + charSVG(TEAM[id], '78 40 84 84', false) + '</div>';
+}
+function deskHTML(id, lead){
+  var c = TEAM[id];
+  return '<div class="desk'+(lead?' lead':'')+'" id="desk-'+id+'" data-s="idle">' +
+    '<div class="bubble" aria-hidden="true"><i></i><i></i><i></i></div>' +
+    charSVG(c, null, true) +
+    '<div class="plate"><b>'+c.name+'</b><span>'+c.role+'</span><span class="status"><span class="dot"></span><span class="st">Waiting for a task</span></span></div>' +
+  '</div>';
+}
+document.getElementById('leadDesk').innerHTML = deskHTML('leader', true);
+document.getElementById('staff').innerHTML = STAFF.map(function(id){ return deskHTML(id); }).join('');
+
+var STATUS_TEXT = { idle:'Waiting for a task', thinking:'Thinking…', writing:'Writing…', done:'Done', waiting:'Waiting for teammates' };
+var breaks = {};
+function setStatus(id, s, text){
+  var d = document.getElementById('desk-'+id);
+  if (!d) return;
+  endBreak(id);
+  d.setAttribute('data-s', s);
+  d.querySelector('.st').textContent = text || STATUS_TEXT[s] || s;
+  if (s === 'done' && busy) coffeeBreak(id);
+}
+// When a teammate finishes their step they go and make a coffee, then sit back down.
+function coffeeBreak(id){
+  var d = document.getElementById('desk-'+id);
+  if (!d || breaks[id]) return;
+  void d.getBoundingClientRect();
+  d.classList.add('break');
+  var st = d.querySelector('.st'), before = st.textContent;
+  st.textContent = 'Getting coffee…';
+  breaks[id] = setTimeout(function(){ breaks[id] = null; d.classList.remove('break'); if (st.textContent === 'Getting coffee…') st.textContent = before; }, 7000);
+}
+function endBreak(id){
+  if (!breaks[id]) return;
+  clearTimeout(breaks[id]); breaks[id] = null;
+  var d = document.getElementById('desk-'+id); if (d) d.classList.remove('break');
+}
+// Tap a teammate who is not working to send them for a coffee.
+document.addEventListener('click', function(e){
+  var d = e.target.closest('.desk'); if (!d) return;
+  var id = d.id.replace('desk-', ''), s = d.getAttribute('data-s');
+  if (s !== 'thinking' && s !== 'writing') coffeeBreak(id);
+});
+function resetStatuses(){ Object.keys(TEAM).forEach(function(id){ setStatus(id,'idle'); }); }
+
+// ---------- helpers ----------
+var uid = 0; function newId(){ return 'm' + Date.now().toString(36) + (uid++); }
+function clock(){ var d = new Date(), h = d.getHours(), m = d.getMinutes(); return (h%12||12)+':'+(m<10?'0':'')+m+(h<12?' am':' pm'); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+function slug(s){ return String(s || 'app').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'app'; }
+var toastEl = document.getElementById('toast'), toastT = null;
+function toast(t){ toastEl.textContent = t; toastEl.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.hidden = true; }, 2600); }
+function copyText(text, done){
+  function fallback(){ var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(true); } catch(e) { done(false); } t.remove(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ done(true); }, fallback);
+  else fallback();
+}
+
+// ---------- team chat (kept in this browser only) ----------
+var KEY = 'agent-office-v2';
+var state = { msgs: [] };
+try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && Array.isArray(saved.msgs)) state = saved; } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify({ msgs: state.msgs.slice(-120).map(function(m){ var c = {}; for (var k in m) if (k !== 'live') c[k] = m[k]; return c; }) })); } catch(e) {} }
+
+var feed = document.getElementById('feed');
+var pendingTask = null, busy = false, ctl = null;
+function msgHTML(m){
+  var me = m.who === 'you';
+  var h = '<div class="msg'+(me?' you':'')+(m.kind?' '+m.kind:'')+'" id="'+m.id+'">' + avatar(m.who) + '<div class="body">' +
+    '<span class="who"><b>'+esc(me ? 'You' : TEAM[m.who].name)+'</b>'+(me ? '' : ' · '+esc(TEAM[m.who].role))+' · '+esc(m.time)+'</span>';
+  if (m.kind === 'ask') h += '<span class="tag">Needs your answer</span>';
+  if (m.text) h += '<div class="text">'+esc(m.text)+'</div>';
+  if (m.live) h += '<div class="live">'+esc(m.live)+'</div>';
+  if (m.project) h += '<button class="copy" type="button" data-open="'+esc(m.project)+'">Open project</button>';
+  if (m.retry && pendingTask && !busy && m === state.msgs[state.msgs.length-1]) h += '<button class="copy" type="button" data-retry="1">Try again</button>';
+  return h + '</div></div>';
+}
+var SUGGESTIONS = ['Build a booking web app for my salon. Ask me questions first.', 'Make a mobile app to track my daily water intake.', 'Build a simple sales and expenses tracker for a small shop.', 'Make a mobile app for my salon customers to book appointments.'];
+function renderFeed(){
+  if (!state.msgs.length){
+    feed.innerHTML = '<div class="empty"><h3>Give your team a task</h3><p>Ask for a web app or a mobile app. Aisyah plans it, the team builds and checks it, and the finished app appears in Projects below.</p><div class="chips">' +
+      SUGGESTIONS.map(function(t){ return '<button class="chip" type="button">'+esc(t)+'</button>'; }).join('') + '</div></div>';
+    return;
+  }
+  feed.innerHTML = state.msgs.map(msgHTML).join('');
+  feed.scrollTop = feed.scrollHeight;
+}
+function updateMsg(m){
+  var el = document.getElementById(m.id);
+  if (!el){ renderFeed(); return; }
+  var near = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
+  var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); el.replaceWith(tmp.firstChild);
+  if (near) feed.scrollTop = feed.scrollHeight;
+}
+function addMsg(m){
+  m.id = newId(); m.time = clock(); state.msgs.push(m);
+  if (state.msgs.length === 1) renderFeed();
+  else { var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); feed.appendChild(tmp.firstChild); feed.scrollTop = feed.scrollHeight; }
+  save(); return m;
+}
+function say(who, text, kind){ return addMsg({ who: who, text: text, kind: kind || '' }); }
+
+// ---------- task board ----------
+function setBoard(task, steps, current){
+  document.getElementById('boardTask').textContent = task || 'No task yet. Type one in the team chat.';
+  document.getElementById('boardSteps').innerHTML = (steps || []).map(function(id, i){
+    var cls = current == null ? '' : (i < current ? 'did' : (i === current ? 'now' : ''));
+    return '<li class="'+cls+'">'+(i+1)+'. '+esc(TEAM[id].name)+'</li>';
+  }).join('');
+}
+
+// ---------- projects ----------
+// Paths are from the repo root. Opened from the repo's agent-office/ folder, step up one level;
+// as a published Claude artifact, the project files sit next to the page.
+var BASE = /\/agent-office\/(index\.html)?$/.test(location.pathname) ? '../' : '';
+// Projects built in Claude Code and shipped with this page.
+var FILE_PROJECTS = [
+  { id:'salon-mockup', source:'file', kind:'web', title:'Salon appointment page (mockup)', task:'Task 001',
+    summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
+    link:'mockups/salon-appointment.html', thumb:'mockups/salon-appointment.png',
+    crew:['leader','developer','tester','security-checker'], tests:'PASS', security:'CLEAR', createdAt:0,
+    secured:['a Content-Security-Policy', 'no page address sent to Google', 'Android backup turned off'] }
+];
+var teamProjects = [], building = null, projectsCol = null, savedOnline = false;
+
+function allProjects(){
+  var list = teamProjects.slice().sort(function(a, b){ return (b.createdAt||0) - (a.createdAt||0); });
+  return (building ? [building] : []).concat(list, FILE_PROJECTS);
+}
+function findProject(id){ return allProjects().filter(function(p){ return p.id === id; })[0]; }
+var ICONS = {
+  web: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><rect x="6" y="12" width="52" height="40" rx="5"/><line x1="6" y1="22" x2="58" y2="22"/><circle cx="13" cy="17" r="1.6" fill="currentColor"/><circle cx="19" cy="17" r="1.6" fill="currentColor"/></svg>',
+  mobile: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><rect x="18" y="5" width="28" height="54" rx="6"/><line x1="28" y1="51" x2="36" y2="51"/></svg>'
+};
+function verdictHTML(p){
+  if (p.isBuilding) return '<span class="wait">'+esc(p.stage)+'</span>';
+  var t = p.tests === 'PASS' ? '<span class="ok">Tests: PASS</span>' : '<span class="bad">Tests: '+esc(p.tests||'not run')+'</span>';
+  var s = p.security === 'CLEAR' ? '<span class="ok">Security: CLEAR TO SHIP</span>' : '<span class="bad">Security: '+esc(p.security||'not run')+'</span>';
+  return t + s;
+}
+function projectCard(p){
+  var thumb = p.thumb
+    ? '<button class="thumb" type="button" data-open="'+esc(p.id)+'" tabindex="-1" aria-hidden="true"><img src="'+esc(BASE+p.thumb)+'" alt="" loading="lazy"></button>'
+    : '<button class="thumb art" type="button" '+(p.isBuilding?'disabled':'data-open="'+esc(p.id)+'"')+' tabindex="-1" aria-hidden="true">'+ICONS[p.kind === 'mobile' ? 'mobile' : 'web']+'<span>'+esc(p.title)+'</span></button>';
+  var acts = '';
+  if (!p.isBuilding){
+    acts += '<button class="open" type="button" data-open="'+esc(p.id)+'">Open project</button>';
+    if (p.kind === 'mobile' && p.html) acts += '<button class="btn2" type="button" data-apk="'+esc(p.id)+'">Build APK</button>';
+    if (p.html) acts += '<button class="btn2" type="button" data-code="'+esc(p.id)+'">Copy code</button>';
+    if (p.html && p.source !== 'file') acts += '<button class="btn2" type="button" data-sec="'+esc(p.id)+'">Security check</button>';
+    if (p.source !== 'file') acts += '<button class="btn2 danger" type="button" data-del="'+esc(p.id)+'">Delete</button>';
+  }
+  return '<article class="proj'+(p.isBuilding?' building':'')+'">' + thumb + '<div class="pbody">' +
+    '<h3>'+esc(p.title)+'</h3><div class="meta"><span class="kind">'+(p.kind === 'mobile' ? 'Mobile app' : 'Web app')+'</span>'+(p.source === 'file' && p.task ? '<span class="kind">'+esc(p.task)+'</span>' : '')+'</div>' +
+    '<p>'+esc(p.summary)+'</p>' +
+    '<div class="crew">'+(p.crew||[]).filter(function(id){ return TEAM[id]; }).map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
+    '<div class="verdicts">'+verdictHTML(p)+'</div>' +
+    (p.secured && p.secured.length ? '<p>Security fixes: '+esc(p.secured.slice(0,3).join('; '))+'</p>' : '') +
+    (p.issues && p.issues.length ? '<p>Open issues: '+esc(p.issues.slice(0,3).join('; '))+'</p>' : '') +
+    '<div class="actions">'+acts+'</div></div></article>';
+}
+function renderProjects(){ document.getElementById('projects').innerHTML = allProjects().map(projectCard).join(''); }
+
+// Saved projects live in the artifact's shared store, so they are there next time.
+// A copy published with the page (projects-snapshot.json) shows them even if the store cannot be reached.
+var VERSION = 'v12';
+var storeState = 'Loading saved projects…', storeLoaded = false;
+function setStoreState(t, retry){
+  storeState = t;
+  document.getElementById('projSub').innerHTML = 'Web and mobile apps the team has built and checked. Open one to use it. <span class="kind">' + esc(t) + '</span>' +
+    (retry ? ' <button class="btn2" type="button" id="storeRetry" style="min-height:32px">Try again</button>' : '');
+  var b = document.getElementById('storeRetry'); if (b) b.onclick = function(){ setStoreState('Loading saved projects…'); if (projectsCol) loadProjects(); else initStore(); };
+}
+var snapshotProjects = [];
+function loadSnapshot(){
+  fetch(BASE ? BASE + 'agent-office/projects-snapshot.json' : 'projects-snapshot.json').then(function(r){ if (!r.ok) throw 0; return r.json(); }).then(function(list){
+    if (!Array.isArray(list)) return;
+    snapshotProjects = list.map(function(p){ p.fromSnapshot = true; return p; });
+    if (!storeLoaded){ mergeProjects([]); }
+  }).catch(function(){});
+}
+function mergeProjects(fromStore){
+  var ids = {}; fromStore.forEach(function(p){ ids[p.id] = 1; });
+  var keep = teamProjects.filter(function(p){ return p.justSaved && !ids[p.id]; });
+  keep.forEach(function(p){ ids[p.id] = 1; });
+  // The store is the source of truth once it answers; the snapshot only fills in until then.
+  var snap = storeLoaded ? [] : snapshotProjects.filter(function(p){ return !ids[p.id]; });
+  teamProjects = fromStore.concat(keep, snap);
+  renderProjects();
+}
+function initStore(){
+  setStoreState('Loading saved projects…');
+  if (!(window.claude && window.claude.use)){ setStoreState('Open this page in Claude to save new projects.'); return; }
+  setTimeout(function(){ if (!storeLoaded) setStoreState('Saved projects have not loaded in this view yet (' + VERSION + ')', true); }, 12000);
+  Promise.resolve().then(function(){ return window.claude.use('db'); }).then(function(db){
+    if (!db){ setStoreState('Saving is not available in this view (' + VERSION + ')', true); return; }
+    projectsCol = db.collection('projects');
+    // Live updates, plus a direct load on open and every 20 seconds in case live updates do not arrive in this view.
+    projectsCol.onSnapshot(applySnapshot, storeError);
+    loadProjects();
+    if (!window.__storeTimer) window.__storeTimer = setInterval(function(){ if (!document.hidden && !busy) loadProjects(); }, 20000);
+  }, function(e){ setStoreState('Could not connect to saved projects: ' + (e && (e.code || e.message) || 'error') + ' (' + VERSION + ')', true); });
+}
+function applySnapshot(snap){
+  savedOnline = true; storeLoaded = true;
+  var fromStore = snap.docs.map(function(d){ var o = d.data() || {}; o.id = d.id; return o; });
+  setStoreState(fromStore.length + ' saved');
+  mergeProjects(fromStore);
+}
+function storeError(e){ if (!storeLoaded) setStoreState('Saved projects could not be loaded: ' + (e && (e.code || e.message) || 'error') + ' (' + VERSION + ')', true); }
+function loadProjects(){ if (projectsCol) projectsCol.get().then(applySnapshot, storeError); }
+
+// ---------- project viewer ----------
+var viewer = document.getElementById('viewer'), stage = document.getElementById('stage');
+document.getElementById('viewerClose').onclick = function(){ viewer.close(); };
+viewer.addEventListener('close', function(){ stage.innerHTML = ''; });
+function showViewer(p, html){
+  viewer.classList.toggle('mobile', p.kind === 'mobile');
+  document.getElementById('viewerTitle').textContent = p.title;
+  document.getElementById('viewerActs').innerHTML = (p.kind === 'mobile' && p.html ? '<button class="btn2" type="button" data-apk="'+esc(p.id)+'">Build APK</button>' : '');
+  // Sandboxed: the app runs in its own locked box and cannot reach this dashboard or your data.
+  var f = document.createElement('iframe');
+  f.title = p.title + ' preview';
+  f.setAttribute('sandbox', 'allow-scripts allow-forms allow-modals allow-popups');
+  f.srcdoc = html;
+  stage.innerHTML = '';
+  if (p.kind === 'mobile'){ var ph = document.createElement('div'); ph.className = 'phone'; ph.appendChild(f); stage.appendChild(ph); }
+  else stage.appendChild(f);
+  document.getElementById('viewerNote').textContent = p.kind === 'mobile'
+    ? 'Phone preview. To install it on an Android phone, press Build APK and paste the instruction into Claude Code.'
+    : 'Live preview. What you type here is not saved.';
+  viewer.showModal();
+}
+function openProject(id){
+  var p = findProject(id); if (!p) return;
+  if (p.html) return showViewer(p, p.html);
+  fetch(BASE + p.link).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(html){ showViewer(p, html); })
+    .catch(function(){ var t = document.createElement('a'); t.href = BASE + p.link; t.target = '_blank'; t.rel = 'noopener'; document.body.appendChild(t); t.click(); t.remove(); });
+}
+function apkInstruction(p){
+  var s = slug(p.title);
+  return 'Build an Android APK for the "' + p.title + '" app that my Agent Office team made.\n\n' +
+    '1. In the Aiagent repository, create apps/' + s + '/ as a Capacitor app, following the "Android apps (APK)" section in CLAUDE.md and .claude/agents/developer.md.\n' +
+    '2. Save the HTML below as apps/' + s + '/src/index.html and make the build script copy it to www/index.html.\n' +
+    '3. Use appId com.example.' + s.replace(/-/g, '') + ' (placeholder) and appName "' + p.title + '".\n' +
+    '4. Build a debug APK with scripts/build-apk.sh apps/' + s + ', have the tester and security-checker check it, then send me the APK.\n\n' +
+    '```html\n' + p.html + '\n```\n';
+}
+
+// ---------- delete ----------
+var confirmDlg = document.getElementById('confirm'), toDelete = null;
+document.getElementById('confirmNo').onclick = function(){ confirmDlg.close(); };
+document.getElementById('confirmYes').onclick = function(){
+  confirmDlg.close();
+  var id = toDelete; toDelete = null; if (!id) return;
+  snapshotProjects = snapshotProjects.filter(function(p){ return p.id !== id; });
+  if (projectsCol && savedOnline && id.indexOf('local-') !== 0) projectsCol.doc(id).delete().then(function(){ teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }, function(e){ toast('Could not delete it (' + (e && e.code || 'error') + '). Only editors of this page can delete projects.'); });
+  else { teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }
+};
+
+// ---------- clicks ----------
+var box = document.getElementById('box');
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-open],[data-apk],[data-code],[data-del],[data-sec],[data-retry],.chip');
+  if (!t) return;
+  if (t.classList.contains('chip')){ box.value = t.textContent; box.focus(); return; }
+  if (t.dataset.open) return openProject(t.dataset.open);
+  if (t.dataset.retry){ if (!busy && pendingTask) runTask(pendingTask, true); return; }
+  var p = findProject(t.dataset.apk || t.dataset.code || t.dataset.del || t.dataset.sec); if (!p) return;
+  if (t.dataset.sec) return recheckSecurity(p);
+  if (t.dataset.apk) copyText(apkInstruction(p), function(ok){ toast(ok ? 'Copied. Paste it into Claude Code to build the APK.' : 'Copy failed. Use Copy code instead.'); });
+  else if (t.dataset.code) copyText(p.html, function(ok){ toast(ok ? 'Code copied.' : 'Copy failed.'); });
+  else if (t.dataset.del){ toDelete = p.id; document.getElementById('confirmText').textContent = 'Delete "' + p.title + '"? This cannot be undone.'; confirmDlg.showModal(); }
+});
+document.getElementById('clear').onclick = function(){
+  if (busy) return;
+  state = { msgs: [] }; pendingTask = null; save(); renderFeed(); resetStatuses(); setBoard(null);
+};
+
+// ---------- Claude ----------
+var sample = null;
+var notice = document.getElementById('notice');
+function setNotice(text){ notice.textContent = text; notice.classList.toggle('on', !!text); }
+if (window.claude && window.claude.use){
+  window.claude.use('sample').then(function(s){ sample = s; if (!s) setNotice('Your team needs Claude to work, and it is not available in this view. Open this page in Claude to bring them to life.'); });
+} else setNotice('Your team needs Claude to work. Open this page in Claude to bring them to life.');
+
+function errText(e){
+  switch(e && e.code){
+    case 'cancelled': return 'Stopped.';
+    case 'not_granted': case 'sampling_disabled': case 'not_declared': case 'capability_disabled':
+      return 'The team needs your permission to use Claude. Allow it when asked, or check this page\'s permissions.';
+    case 'rate_limited': return 'Claude is busy or you have reached a usage limit. Wait a little, then press Try again.';
+    case 'session_expired': return 'Your Claude session ended. Sign in again, then press Try again.';
+    case 'refused': return 'Claude declined this step. Press Try again, or reword the task.';
+    case 'invalid_json': return 'An answer came back unreadable. Press Try again.';
+    case 'prompt_too_large': return 'This is too much work for one go. Ask for a smaller first version.';
+    case 'too_large': return 'The app came out too big to save. Ask for a smaller first version.';
+    case 'no_code': return 'Ravi did not return a working app file. Press Try again.';
+    default: return 'Could not reach Claude. Press Try again.';
+  }
+}
+function history(){
+  return state.msgs.filter(function(m){ return (m.who === 'you' || m.who === 'leader') && m.text && m.kind !== 'err'; })
+    .slice(-12).map(function(m){ return (m.who === 'you' ? 'Owner' : 'Aisyah') + ': ' + m.text; }).join('\n');
+}
+function persona(id){ return 'You are ' + TEAM[id].name + ', the ' + TEAM[id].role + ' on a small AI software team that builds web apps and mobile apps for the owner, who is not a full-time engineer. ' + TEAM[id].prompt + '\n'; }
+var APP_RULES =
+  'How apps are made here: each app is ONE self-contained HTML file (inline CSS and JavaScript). It runs in a locked preview box: no external scripts, images or network requests (a Google Fonts stylesheet is fine if the CSS also names system fallback fonts); alert(), confirm() and prompt() may be blocked, so build messages into the page; localStorage may be unavailable, so wrap it in try/catch and keep data in memory when it fails. There is no server: data stays on the device. ' +
+  'Web apps: responsive, phone first, then tablet and desktop. Mobile apps: designed for a 390px-wide phone screen, feel like a native app (app bar, bottom tab bar if there are several screens, large touch targets of at least 44px, respect safe areas); later they are wrapped into an Android APK with Capacitor in Claude Code.';
+
+function extractCode(t){
+  var m = t.match(/```(?:html)?\s*\n([\s\S]*?)(?:```|$)/i);
+  var code = m ? m[1] : '';
+  if (!/<html|<body|<div|<main/i.test(code)){ var i = t.search(/<!doctype html|<html/i); code = i >= 0 ? t.slice(i) : ''; }
+  code = code.replace(/```\s*$/, '').trim();
+  return /<\/(body|html)>\s*$/i.test(code) || code.length > 400 ? code : '';
+}
+function section(t, name){
+  var re = new RegExp('#{2,3}\\s*' + name + '\\s*\\n([\\s\\S]*?)(?=\\n#{2,3}\\s*(?:MESSAGE|CODE)\\b|```|$)', 'i');
+  var m = t.match(re); return m ? m[1].trim() : '';
+}
+
+// Ravi writes a whole app file. Long answers can be cut short, so ask him to carry on (twice at most).
+async function writeApp(prompt, liveMsg, who){
+  who = who || 'developer';
+  var messages = [{ role: 'user', content: prompt }], full = '', base = '';
+  for (var round = 0; round < 3; round++){
+    var r = await sample(messages, { signal: ctl.signal, cache: false, onText: function(u){
+      var chars = (base + u.text).length;
+      liveMsg.live = (who === 'security-checker' ? 'Hardening the app… ' : 'Writing the app… ') + chars.toLocaleString() + ' characters';
+      setStatus(who, 'writing', who === 'security-checker' ? 'Fixing security…' : null);
+      updateMsg(liveMsg);
+    }});
+    full = base + r.text;
+    if (!r.truncated) break;
+    base = full;
+    messages = [{ role: 'user', content: prompt }, { role: 'assistant', content: full }, { role: 'user', content: 'You were cut off. Continue exactly where you stopped: output only the rest of the file, with no repetition and no commentary.' }];
+  }
+  var code = extractCode(full);
+  if (!code) throw { code: 'no_code' };
+  return { message: section(full, 'MESSAGE'), code: code };
+}
+
+// Daniel gets real evidence: load the app in a hidden locked box and collect any errors.
+function runInBox(html){
+  return new Promise(function(resolve){
+    var f = document.createElement('iframe'), errors = [], textLen = -1, done = false;
+    f.setAttribute('sandbox', 'allow-scripts allow-forms');
+    f.style.cssText = 'position:absolute;left:-9999px;width:390px;height:800px;border:0';
+    var probe = '<script>(function(){function s(m){try{parent.postMessage({agentOffice:1,err:String(m).slice(0,300)},"*")}catch(e){}}' +
+      'window.addEventListener("error",function(e){s((e.message||"error")+" (line "+e.lineno+")")});' +
+      'window.addEventListener("unhandledrejection",function(e){s("Unhandled promise rejection: "+(e.reason&&e.reason.message||e.reason))});' +
+      'window.addEventListener("load",function(){setTimeout(function(){try{parent.postMessage({agentOffice:1,loaded:(document.body&&document.body.innerText||"").trim().length,controls:document.querySelectorAll("button,input,select,textarea,a").length},"*")}catch(e){}},600)})})();<\/script>';
+    function onMsg(e){
+      if (e.source !== f.contentWindow || !e.data || !e.data.agentOffice) return;
+      if (e.data.err && errors.length < 12) errors.push(e.data.err);
+      if (e.data.loaded != null){ textLen = e.data.loaded; finish(e.data.controls); }
+    }
+    function finish(controls){ if (done) return; done = true; window.removeEventListener('message', onMsg); f.remove();
+      resolve('Loaded in a 390px-wide test box. ' + (textLen < 0 ? 'The page did not finish loading within 4 seconds.' : 'Visible text: ' + textLen + ' characters; interactive controls: ' + controls + '.') +
+        (errors.length ? ' JavaScript errors: ' + errors.join(' | ') : ' No JavaScript errors.')); }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(f);
+    f.srcdoc = probe + html;
+    setTimeout(function(){ finish('?'); }, 4000);
+  });
+}
+
+function buildPrompt(plan, dataPlan, hist){
+  return persona('developer') + APP_RULES + '\n\n' +
+    'Conversation with the owner:\n' + (hist || '(none)') + '\n\n' +
+    'Build this ' + (plan.project.kind === 'mobile' ? 'MOBILE app' : 'WEB app') + ': "' + plan.project.title + '"\n' + plan.project.summary + '\n\n' +
+    'Brief from Aisyah (Project Leader):\n' + plan.brief + '\n\n' +
+    (dataPlan ? 'Data plan from Mei (Database Manager):\n' + dataPlan + '\n\n' : '') +
+    'Quality bar: a polished, working first version, not a sketch. Real-looking sample data so it is useful straight away (mark it as sample data). Every button works. Labels on every input, visible keyboard focus, good contrast, light and dark mode via prefers-color-scheme. Validate input and show friendly inline messages. Never put user text into innerHTML: use textContent. If the owner gave no brand name, use a [BRACKETED] placeholder. Keep it under about 700 lines.\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne or two plain sentences for the team chat about what you built (no code).\n### CODE\n```html\n<!doctype html> ... the complete file ...\n```';
+}
+function fixPrompt(plan, code, problems){
+  return persona('developer') + APP_RULES + '\n\nYou built "' + plan.project.title + '" (' + plan.project.kind + ' app). The tester and security checker found these problems:\n' + problems + '\n\n' +
+    'Fix all of them and keep everything else working. Current file:\n```html\n' + code + '\n```\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne plain sentence for the team chat about what you fixed.\n### CODE\n```html\n<!doctype html> ... the complete corrected file ...\n```';
+}
+function testPrompt(plan, code, runtime){
+  return persona('tester') + APP_RULES + '\n\nCheck this ' + plan.project.kind + ' app, "' + plan.project.title + '", against the brief.\nBrief:\n' + plan.brief + '\n\n' +
+    'Result of loading it in the test box: ' + runtime + '\n\nRead the code and walk through it as a user would: the normal path, empty and invalid input, very long input, a small screen, keyboard use, and what happens when storage is unavailable.\n```html\n' + code + '\n```\n\n' +
+    'FAIL only for critical or high problems: a JavaScript error, a must-have feature from the brief missing or broken, or the app unusable on a phone. Medium and low problems are listed but still PASS.\n' +
+    'Reply with only JSON: {"verdict": "PASS" or "FAIL", "message": "1-2 plain sentences for the team chat", "bugs": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
+}
+function securityPrompt(plan, code){
+  return persona('security-checker') + APP_RULES + '\n\nReview this front-end-only ' + plan.project.kind + ' app, "' + plan.project.title + '". There is no server, login or payment. A Content-Security-Policy that blocks outside scripts and network calls has already been added.\n```html\n' + code + '\n```\n\n' +
+    'Check: user input reaching innerHTML, outerHTML, insertAdjacentHTML, eval, new Function, document.write or attributes (XSS); inline event handlers built from data; missing maxlength or type on inputs; any secrets or keys; any external scripts or network requests; personal data kept without need or kept longer than needed; unsafe links (target=_blank without rel=noopener). For a mobile app, also anything that would be a problem once it is an Android APK.\n' +
+    'Only list real problems you can point to in this code. BLOCKED only for critical or high findings.\n' +
+    'Reply with only JSON: {"verdict": "CLEAR" or "BLOCKED", "message": "1-2 plain sentences for the team chat", "findings": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
+}
+function hardenPrompt(plan, code, findings){
+  return persona('security-checker') + APP_RULES + '\n\nYou reviewed "' + plan.project.title + '" (' + plan.project.kind + ' app) and found these security problems:\n' +
+    findings.map(function(f){ return '- [' + (f.severity || 'medium') + '] ' + f.title + ': ' + (f.fix || ''); }).join('\n') + '\n\n' +
+    'Fix them yourself with the smallest safe change (for example textContent instead of innerHTML, maxlength on inputs, removing data that is not needed). Change nothing else: keep every feature, the layout and the wording exactly as they are, and keep the Content-Security-Policy meta tag. Current file:\n```html\n' + code + '\n```\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne plain sentence for the team chat about what you fixed.\n### CODE\n```html\n<!doctype html> ... the complete fixed file ...\n```';
+}
+
+// Farid's baseline, applied to every app: a Content-Security-Policy that blocks outside scripts
+// and network calls, and safe links for anything that opens a new tab.
+var CSP = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'";
+function addBaseline(html){
+  var out = html, added = [];
+  if (!/http-equiv=["']?Content-Security-Policy/i.test(out)){
+    var meta = '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">';
+    out = /<head[^>]*>/i.test(out) ? out.replace(/<head[^>]*>/i, function(m){ return m + meta; }) : meta + out;
+    added.push('a Content-Security-Policy');
+  }
+  var n = 0;
+  out = out.replace(/<a\b([^>]*\btarget=["']?_blank["']?[^>]*)>/gi, function(m, attrs){ if (/\brel=/i.test(attrs)) return m; n++; return '<a' + attrs + ' rel="noopener noreferrer">'; });
+  if (n) added.push('safe settings on ' + n + ' new-tab link' + (n > 1 ? 's' : ''));
+  return { html: out, added: added };
+}
+var hasErrors = function(report){ return /JavaScript errors:/.test(report); };
+
+// Farid checks and improves security: baseline hardening, review, fixes, proof that nothing broke, re-check.
+async function secureApp(plan, code, hooks){
+  var who = 'security-checker', live;
+  hooks.step(who); setStatus(who, 'thinking', 'Checking…'); hooks.stage('Farid is checking security…');
+  var base = addBaseline(code), cur = base.html, fixed = base.added.slice(), changedLogic = false;
+  live = hooks.track(addMsg({ who: who, text: '', live: 'Checking security…' }));
+  var rv = await sample.json(securityPrompt(plan, cur), { signal: ctl.signal, cache: false });
+  var findings = sevList(rv && rv.findings), verdict = rv && rv.verdict;
+  var toFix = findings.filter(function(f){ return /critical|high|medium/i.test(f.severity || ''); });
+  if (!toFix.length){
+    live.text = String(rv && rv.message || 'No security problems found.') + (fixed.length ? ' I also added ' + fixed.join(' and ') + '.' : '');
+    delete live.live; updateMsg(live); save();
+  } else {
+    live.text = String(rv && rv.message || '') + ' I am fixing ' + toFix.length + ' of them now.'; delete live.live; updateMsg(live); save();
+    hooks.stage('Farid is fixing security…');
+    live = hooks.track(addMsg({ who: who, text: '', live: 'Hardening the app…' }));
+    var h = await writeApp(hardenPrompt(plan, cur, toFix), live, who);
+    var hb = addBaseline(h.code).html;
+    var before = await runInBox(cur), after = await runInBox(hb);
+    if (hasErrors(after) && !hasErrors(before)){
+      live.text = 'My security fix caused an error in the app, so I kept the previous version. These stay open: ' + toFix.map(function(f){ return f.title; }).join('; ') + '.';
+    } else {
+      cur = hb; changedLogic = true;
+      fixed = fixed.concat(toFix.map(function(f){ return f.title; }));
+      live.text = h.message || 'Fixed the security problems.';
+    }
+    delete live.live; updateMsg(live); save();
+    hooks.stage('Farid is re-checking security…'); setStatus(who, 'thinking', 'Re-checking…');
+    live = hooks.track(addMsg({ who: who, text: '', live: 'Re-checking…' }));
+    var r2 = await sample.json(securityPrompt(plan, cur), { signal: ctl.signal, cache: false });
+    findings = sevList(r2 && r2.findings); verdict = r2 && r2.verdict;
+    live.text = String(r2 && r2.message || 'Re-check finished.'); delete live.live; updateMsg(live); save();
+  }
+  setStatus(who, 'done');
+  return { code: cur, security: (verdict === 'CLEAR' && !serious(findings).length) ? 'CLEAR' : 'BLOCKED',
+    findings: findings, fixed: fixed, changedLogic: changedLogic };
+}
+
+function planPrompt(task, hist){
+  return persona('leader') + 'Your teammates: Ravi (developer, builds the app), Mei (database manager, plans the data), Daniel (tester), Farid (security checker).\n' + APP_RULES + '\n\n' +
+    'Conversation so far:\n' + (hist || '(none)') + '\n\nThe owner\'s new message:\n"""' + task + '"""\n\n' +
+    'Decide:\n- Small talk, or a question you can answer yourself: answer it, build=false.\n' +
+    '- Too vague to build well (who uses it, or the main thing it must do, is unclear): ask at most 3 short questions, build=false. If the owner already answered your questions above, or said to go ahead, build.\n' +
+    '- Otherwise build=true. Pick kind "mobile" if the owner says mobile, phone, Android, iPhone, APK or "app for my customers on their phone"; otherwise "web". Keep the first version small: a few screens, no logins, no payments, no server.\n' +
+    'Set needsData=true if the app stores records (bookings, items, entries).\n' +
+    'Reply with only JSON: {"reply": "1-3 friendly plain sentences to the owner; when building, say what the team will make", "questions": ["short question"], "build": true or false, ' +
+    '"project": {"title": "short app name", "kind": "web" or "mobile", "summary": "one sentence for the project card"}, "needsData": true or false, ' +
+    '"brief": "for Ravi: screens, features, must-haves and acceptance checks, as short bullet lines"}';
+}
+function dataPrompt(plan){
+  return persona('database-manager') + APP_RULES + '\n\nPlan the data for "' + plan.project.title + '" (' + plan.project.kind + ' app).\nBrief:\n' + plan.brief + '\n\n' +
+    'Keep it simple for a device-only first version: what records are kept, their fields and types, required fields, sample records, and how they are saved (in memory, plus localStorage in try/catch). Note what would change when it moves to a real database later.\n' +
+    'Reply with only JSON: {"message": "1-2 plain sentences for the team chat", "dataPlan": "the plan as short bullet lines for Ravi"}';
+}
+
+function sevList(items){ return (items || []).filter(function(b){ return b && b.title; }); }
+function serious(items){ return sevList(items).filter(function(b){ return /critical|high/i.test(b.severity || ''); }); }
+function setBuilding(stageText){ if (building){ building.stage = stageText; renderProjects(); } }
+
+async function runTask(task, isRetry){
+  if (!isRetry) say('you', task);
+  pendingTask = task;
+  var hist = history();
+  busy = true; setBusy(true); setNotice(''); ctl = new AbortController();
+  resetStatuses(); setBoard(task, ['leader'], 0);
+  var who = 'leader', live = null;
+  try {
+    setStatus('leader', 'thinking');
+    live = addMsg({ who: 'leader', text: '', live: 'Reading your message…' });
+    var plan = await sample.json(planPrompt(task, hist), { signal: ctl.signal, cache: false });
+    var qs = (plan && Array.isArray(plan.questions) ? plan.questions : []).filter(Boolean).slice(0, 3);
+    var willBuild = !!(plan && plan.build && plan.project && plan.project.title && plan.brief);
+    live.text = String((plan && plan.reply) || (willBuild ? 'On it.' : 'Could you tell me a bit more?'));
+    if (!willBuild && qs.length){ live.text += '\n\n' + qs.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n'); live.kind = 'ask'; }
+    delete live.live; updateMsg(live); save();
+    if (!willBuild){ setStatus('leader', qs.length ? 'waiting' : 'idle', qs.length ? 'Waiting for your answer' : null); pendingTask = null; return; }
+
+    plan.project.kind = plan.project.kind === 'mobile' ? 'mobile' : 'web';
+    var steps = (plan.needsData ? ['database-manager'] : []).concat(['developer', 'tester', 'security-checker']);
+    var board = ['leader'].concat(steps);
+    building = { id: 'building', isBuilding: true, title: plan.project.title, kind: plan.project.kind, summary: plan.project.summary || '', task: '', crew: board, stage: 'Planning…' };
+    renderProjects();
+    setStatus('leader', 'waiting');
+
+    var dataPlan = '';
+    if (plan.needsData){
+      who = 'database-manager'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking'); setBuilding('Mei is planning the data…');
+      live = addMsg({ who: who, text: '', live: 'Planning the data…' });
+      var d = await sample.json(dataPrompt(plan), { signal: ctl.signal, cache: false });
+      dataPlan = String(d && d.dataPlan || ''); live.text = String(d && d.message || 'Data plan is ready for Ravi.'); delete live.live; updateMsg(live); save();
+      setStatus(who, 'done');
+    }
+
+    who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking'); setBuilding('Ravi is building the app…');
+    live = addMsg({ who: who, text: '', live: 'Starting…' });
+    var built = await writeApp(buildPrompt(plan, dataPlan, hist), live);
+    var code = built.code;
+    live.text = built.message || 'The first version is ready for testing.'; delete live.live; updateMsg(live); save();
+    setStatus(who, 'done');
+
+    var hooks = { step: function(id){ who = id; setBoard(task, board, board.indexOf(id)); }, track: function(m){ live = m; return m; }, stage: setBuilding };
+    async function test(round){
+      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Testing…'); setBuilding((round ? 'Daniel is re-testing' : 'Daniel is testing') + '…');
+      var runtime = await runInBox(code);
+      live = addMsg({ who: who, text: '', live: 'Testing the app…' });
+      var t = await sample.json(testPrompt(plan, code, runtime), { signal: ctl.signal, cache: false });
+      live.text = String(t && t.message || 'Testing finished.'); delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      return { tests: (t && t.verdict === 'PASS' && !serious(t.bugs).length) ? 'PASS' : 'FAIL', bugs: sevList(t && t.bugs) };
+    }
+
+    // Daniel tests; Ravi fixes what Daniel finds (one round).
+    var res = await test(0);
+    if (res.tests !== 'PASS'){
+      var problems = res.bugs.map(function(b){ return '- [' + (b.severity || 'medium') + '] ' + b.title + ': ' + (b.fix || ''); }).join('\n');
+      who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Fixing…'); setBuilding('Ravi is fixing what Daniel found…');
+      live = addMsg({ who: who, text: '', live: 'Fixing…' });
+      var fixed = await writeApp(fixPrompt(plan, code, problems), live);
+      code = fixed.code; live.text = fixed.message || 'Fixed. Sending it back to Daniel.'; delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      res = await test(1);
+    }
+
+    // Farid checks and improves security himself.
+    var sec = await secureApp(plan, code, hooks);
+    code = sec.code;
+    if (sec.changedLogic){
+      // Farid changed code, so Daniel makes sure the app still runs.
+      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Re-testing…'); setBuilding('Daniel is re-testing after the security fixes…');
+      var again = await runInBox(code);
+      live = addMsg({ who: who, text: hasErrors(again) ? 'After Farid\'s security fixes the app shows an error: ' + again.replace(/^.*JavaScript errors: /, '') : 'I re-ran the app after Farid\'s security fixes: it loads with no errors.' });
+      if (hasErrors(again)) res.tests = 'FAIL';
+      setStatus(who, 'done');
+    }
+    res.security = sec.security; res.findings = sec.findings; res.secured = sec.fixed;
+
+    if (code.length > 240000) throw { code: 'too_large' };
+    var project = { title: plan.project.title, kind: plan.project.kind, summary: plan.project.summary || '', task: task.slice(0, 200),
+      html: code, tests: res.tests, security: res.security, secured: (res.secured || []).slice(0, 8),
+      issues: res.bugs.concat(res.findings).map(function(b){ return b.title + ' (' + (b.severity || 'low') + ')'; }).slice(0, 8),
+      crew: board, createdAt: Date.now() };
+    var id;
+    if (projectsCol && savedOnline){ var ref = projectsCol.doc(); id = ref.id; await ref.set(project); }
+    else id = 'local-' + Date.now().toString(36);
+    // Show it right away, without waiting for the store to report back.
+    project.id = id; project.justSaved = true;
+    teamProjects = teamProjects.filter(function(p){ return p.id !== id; }).concat([project]);
+    building = null; renderProjects();
+
+    who = 'leader'; setBoard(task, board, board.length); setStatus('leader', 'done');
+    var ok = res.tests === 'PASS' && res.security === 'CLEAR';
+    var summary = '"' + project.title + '" is ready in Projects below. Tests: ' + res.tests + ' · Security: ' + (res.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' +
+      (project.secured.length ? ' Farid secured: ' + project.secured.slice(0, 3).join('; ') + '.' : '') +
+      (project.issues.length ? ' Open issues to look at later: ' + project.issues.slice(0, 3).join('; ') + '.' : '') +
+      (ok ? '' : ' It still has serious problems, so treat it as a draft and tell me what to change.') +
+      (project.kind === 'mobile' ? ' To put it on an Android phone, open it and press Build APK.' : '') +
+      ' Tell me what you would like changed next.';
+    var m = addMsg({ who: 'leader', text: summary, kind: 'done' }); m.project = id; updateMsg(m); save();
+    pendingTask = null;
+  } catch (e) {
+    building = null; renderProjects();
+    if (live && !live.text){ var i = state.msgs.indexOf(live); if (i >= 0) state.msgs.splice(i, 1); renderFeed(); }
+    else if (live){ delete live.live; updateMsg(live); }
+    var code0 = e && e.code ? e.code : 'unknown';
+    if (code0 === 'cancelled') pendingTask = null;
+    var em = addMsg({ who: who, kind: 'err', text: errText(e) + (code0 !== 'cancelled' && code0 !== 'unknown' ? ' (' + code0 + ')' : ''), retry: code0 !== 'cancelled' && code0 !== 'not_granted' && code0 !== 'sampling_disabled' });
+    setStatus(who, 'idle');
+    busy = false; updateMsg(em);
+  } finally {
+    busy = false; setBusy(false); ctl = null; save();
+  }
+}
+
+// Ask Farid to check and improve an existing project.
+async function recheckSecurity(p){
+  if (busy) return toast('The team is busy. Try again when they finish.');
+  if (!sample) return setNotice('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.');
+  busy = true; setBusy(true); setNotice(''); ctl = new AbortController();
+  resetStatuses(); setBoard('Security check: ' + p.title, ['security-checker'], 0);
+  var live = null, who = 'security-checker';
+  say('you', 'Farid, please check and improve the security of "' + p.title + '".');
+  try {
+    var plan = { project: { title: p.title, kind: p.kind } };
+    var sec = await secureApp(plan, p.html, { step: function(id){ who = id; }, track: function(m){ live = m; return m; }, stage: function(){} });
+    var tests = p.tests;
+    if (sec.changedLogic){
+      var again = await runInBox(sec.code);
+      say('tester', hasErrors(again) ? 'After the security fixes the app shows an error: ' + again.replace(/^.*JavaScript errors: /, '') : 'I re-ran the app after the security fixes: it loads with no errors.');
+      if (hasErrors(again)) tests = 'FAIL';
+    }
+    var secured = (p.secured || []).concat(sec.fixed).filter(function(x, i, a){ return a.indexOf(x) === i; }).slice(0, 8);
+    var issues = sec.findings.map(function(b){ return b.title + ' (' + (b.severity || 'low') + ')'; }).slice(0, 8);
+    var patch = { html: sec.code, security: sec.security, tests: tests, secured: secured, issues: issues, securedAt: Date.now() };
+    if (sec.code.length > 240000) throw { code: 'too_large' };
+    if (projectsCol && savedOnline && p.id.indexOf('local-') !== 0) await projectsCol.doc(p.id).update(patch);
+    for (var k in patch) p[k] = patch[k];
+    renderProjects();
+    var m = say('security-checker', 'Security check done for "' + p.title + '": ' + (sec.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' + (sec.fixed.length ? ' I fixed: ' + sec.fixed.slice(0, 4).join('; ') + '.' : ' Nothing needed fixing.'), 'done');
+    m.project = p.id; updateMsg(m); save();
+    setBoard('Security check: ' + p.title, ['security-checker'], 1);
+  } catch (e) {
+    if (live && !live.text){ var i = state.msgs.indexOf(live); if (i >= 0) state.msgs.splice(i, 1); renderFeed(); }
+    say(who, errText(e), 'err'); setStatus(who, 'idle');
+  } finally {
+    busy = false; setBusy(false); ctl = null; save();
+  }
+}
+
+// ---------- composer ----------
+var form = document.getElementById('form'), sendBtn = document.getElementById('send');
+function setBusy(b){ sendBtn.textContent = b ? 'Stop' : 'Send'; sendBtn.classList.toggle('stop', b); box.disabled = b; }
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  if (busy){ if (ctl) ctl.abort(); return; }
+  var t = box.value.trim(); if (!t) return;
+  if (!sample){ setNotice('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.'); return; }
+  box.value = ''; runTask(t);
+});
+box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+
+renderFeed(); renderProjects(); loadSnapshot(); initStore();
+})();
+</script>
+</body>
+</html>

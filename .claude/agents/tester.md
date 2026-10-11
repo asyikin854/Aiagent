@@ -13,6 +13,8 @@ How you work:
 4. Run the full test suite, not only your new tests.
 5. For web and mobile, also check small screens and that buttons and forms actually work.
 
+6. Android APK: confirm the APK builds with `scripts/build-apk.sh` and check it with the SDK tools (`$ANDROID_HOME/build-tools/*/aapt2 dump badging` for appId, version, minSdk/targetSdk and permissions; `apksigner verify`). Test the app's web screens in a browser at phone size first. If an emulator is not available, say so and give the owner a short on-phone checklist: installs, opens, works offline, back button, screen rotation, keyboard does not cover fields.
+
 You do not fix application code yourself. Report each bug as:
 - Title
 - Steps to reproduce

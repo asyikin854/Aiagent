@@ -1,0 +1,16 @@
+{
+  "name": "salon-booking",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Salon Booking Android app (Capacitor wrapper around mockups/salon-appointment.html)",
+  "scripts": {
+    "build": "node -e \"const fs=require('fs');fs.rmSync('www',{recursive:true,force:true});fs.mkdirSync('www',{recursive:true});fs.copyFileSync('../../mockups/salon-appointment.html','www/index.html')\""
+  },
+  "dependencies": {
+    "@capacitor/android": "7.6.9",
+    "@capacitor/core": "7.6.9"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.6.9"
+  }
+}
