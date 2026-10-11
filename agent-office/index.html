@@ -96,16 +96,16 @@ button,textarea{font:inherit;color:inherit}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-3px);opacity:1}}
 @media (prefers-reduced-motion: reduce){.eyes,.arm,.head,.bubble i{animation:none!important}}
 
-/* side panel */
+/* team chat */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-.tabs{display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--line)}
-.tab{flex:1;min-height:44px;border:0;border-radius:12px;background:transparent;cursor:pointer;font-weight:500;color:var(--muted)}
-.tab[aria-selected="true"]{background:var(--panel-2);color:var(--ink);font-weight:600}
-.tab .count{font-size:12px;color:var(--muted);margin-left:4px}
-.feed{height:600px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.phead{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.phead h2{margin:0;font-family:var(--display);font-size:21px;line-height:1.1}
+.phead span{font-size:12px;color:var(--muted)}
+.feed{height:560px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
 @media (max-width:980px){.feed{height:60vh}}
 .empty{margin:auto 0;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center;padding:12px}
 .empty h3{margin:0;color:var(--ink);font-family:var(--display);font-size:22px}
+.empty p{margin:0;max-width:44ch}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .chip{min-height:40px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;text-align:left}
 .chip:hover{border-color:var(--primary)}
@@ -115,69 +115,73 @@ button,textarea{font:inherit;color:inherit}
 .ava{flex:0 0 40px;width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--wall)}
 .ava svg{display:block;width:100%;height:100%}
 .ava.me{display:flex;align-items:center;justify-content:center;background:var(--primary);color:var(--primary-ink);font-weight:600;font-size:13px}
-.body{min-width:0;max-width:86%;display:flex;flex-direction:column;gap:6px}
+.body{min-width:0;max-width:86%;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .msg.you .body{align-items:flex-end}
 .who{font-size:13px;color:var(--muted)}
 .who b{color:var(--ink);font-weight:600}
 .text{background:var(--panel-2);border-radius:4px 14px 14px 14px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
 .msg.you .text{background:var(--primary);color:var(--primary-ink);border-radius:14px 4px 14px 14px}
+.msg.ask .text{background:var(--panel);border:2px solid var(--accent)}
+.tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7A4A00;background:#FDE7BF;border-radius:99px;padding:2px 8px}
 .msg.err .text{background:transparent;border:1px solid var(--bad);color:var(--bad)}
-details.think,details.res{border:1px dashed var(--line);border-radius:12px;padding:6px 10px;background:var(--panel)}
-details.res{border-style:solid}
-summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);min-height:28px;display:flex;align-items:center;gap:6px}
-details[open] summary{margin-bottom:6px}
-.think .t{font-size:13px;color:var(--muted);white-space:pre-wrap}
+.msg.done .text{border-left:4px solid var(--ok)}
 .live{font-size:13px;color:var(--muted);font-style:italic}
-
-.rich{font-size:13.5px;overflow-wrap:anywhere}
-.rich p{margin:0 0 8px;white-space:pre-wrap}
-.rich pre{margin:0 0 8px;background:#151A26;color:#E6E9F1;border-radius:10px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5}
-.rich code{font-family:var(--mono);font-size:12.5px;background:var(--panel-2);padding:1px 5px;border-radius:5px}
-.rich pre code{background:none;padding:0}
 .copy{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;font-weight:500}
-
-.results{height:600px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
-@media (max-width:980px){.results{height:60vh}}
-.card{border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.card-head{display:flex;align-items:center;gap:10px}
-.card-head .ava{flex-basis:34px;width:34px;height:34px}
-.card-head div{flex:1;min-width:0}
-.card-head b{display:block;font-size:14px}
-.card-head span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .composer{border-top:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
 .composer .rowc{display:flex;gap:8px;align-items:flex-end}
 .composer textarea{flex:1;min-width:0;min-height:48px;max-height:160px;resize:vertical;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2)}
 .send{min-height:48px;padding:0 18px;border-radius:14px;border:0;background:var(--primary);color:var(--primary-ink);font-weight:600;cursor:pointer}
 .send.stop{background:var(--bad);color:#FFFFFF}
-.send:disabled{opacity:.5;cursor:not-allowed}
 .hint{font-size:12px;color:var(--muted)}
 .notice{margin:0 12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:13px;display:none}
 .notice.on{display:block}
+
 /* projects */
 .projects{display:flex;flex-direction:column;gap:12px}
 .projects h2{margin:0;font-family:var(--display);font-size:24px;line-height:1.1}
 .projects .sub{margin:0;color:var(--muted);font-size:14px}
 .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
 .proj{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
-.proj .thumb{display:block;aspect-ratio:16/10;background:var(--panel-2);border-bottom:1px solid var(--line);overflow:hidden}
+.proj .thumb{display:block;aspect-ratio:16/10;max-width:100%;background:var(--panel-2);border-bottom:1px solid var(--line);overflow:hidden;cursor:pointer;padding:0;border-width:0 0 1px;width:100%}
 .proj .thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
-.proj .pbody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
-.proj h3{margin:0;font-family:var(--display);font-size:19px;line-height:1.15}
+.thumb.art{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--wall);color:#E9ECF3}
+.thumb.art svg{width:64px;height:64px}
+.thumb.art span{font-family:var(--display);font-size:18px;font-weight:700;max-width:80%;text-align:center;line-height:1.15}
+.proj.building .thumb.art{background:repeating-linear-gradient(135deg,var(--wall) 0 18px,var(--wall-2) 18px 36px);cursor:default}
+.proj .pbody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.proj h3{margin:0;font-family:var(--display);font-size:19px;line-height:1.15;text-wrap:balance}
 .proj p{margin:0;font-size:13.5px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.kind{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--panel-2);color:var(--ink)}
 .crew{display:flex;flex-wrap:wrap;gap:6px}
 .crew span{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px 3px 3px;border-radius:99px;background:var(--panel-2)}
 .crew .ava{flex-basis:22px;width:22px;height:22px}
 .verdicts{display:flex;flex-wrap:wrap;gap:6px}
 .verdicts span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;border:1px solid currentColor}
 .verdicts .ok{color:var(--ok)} .verdicts .bad{color:var(--bad)} .verdicts .wait{color:var(--muted)}
-.proj .open{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;background:var(--primary);color:var(--primary-ink);font-weight:600;text-decoration:none}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.open{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--primary);color:var(--primary-ink);font-weight:600;text-decoration:none;cursor:pointer}
+.btn2{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-weight:500;cursor:pointer}
+.btn2:hover{background:var(--panel-2)}
+.btn2.danger{color:var(--bad)}
+
+/* project viewer */
 .viewer{width:min(1200px,calc(100vw - 32px));height:min(900px,calc(100vh - 32px));max-width:none;max-height:none;padding:0;border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);overflow:hidden}
 .viewer[open]{display:flex;flex-direction:column}
 .viewer::backdrop{background:rgba(15,18,30,.55)}
-.viewer .vbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--line)}
-.viewer .vbar b{font-family:var(--display);font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.viewer iframe{flex:1;width:100%;border:0;background:#FFFFFF}
+.viewer .vbar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.viewer .vbar b{flex:1;font-family:var(--display);font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewer .stage{flex:1;display:flex;min-height:0;background:var(--panel-2)}
+.viewer .stage iframe{flex:1;width:100%;border:0;background:#FFFFFF}
+.viewer.mobile .stage{align-items:center;justify-content:center;padding:16px;overflow:auto}
+.phone{width:390px;max-width:100%;height:100%;max-height:820px;border:12px solid #1B1F2A;border-radius:42px;overflow:hidden;background:#FFFFFF;display:flex;flex-shrink:0;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.viewer .vnote{margin:0;padding:8px 16px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.confirm{max-width:min(420px,calc(100vw - 32px));border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:18px}
+.confirm::backdrop{background:rgba(15,18,30,.55)}
+.confirm p{margin:0 0 14px}
+.confirm .cacts{display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--page);padding:10px 16px;border-radius:12px;font-size:14px;z-index:10;max-width:calc(100vw - 32px)}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -189,7 +193,7 @@ details[open] summary{margin-bottom:6px}
       <h1>Agent Office</h1>
       <p>Your AI team for websites, mobile apps and SaaS</p>
     </div>
-    <button class="ghost" id="clear" type="button">Clear chat and results</button>
+    <button class="ghost" id="clear" type="button">Clear chat</button>
   </header>
 
   <div class="main">
@@ -208,35 +212,38 @@ details[open] summary{margin-bottom:6px}
       <div class="row2" id="staff"></div>
     </section>
 
-    <section class="panel" aria-label="Team chat and results">
-      <div class="tabs" role="tablist">
-        <button class="tab" role="tab" id="tabChat" aria-selected="true" aria-controls="feed" type="button">Team chat</button>
-        <button class="tab" role="tab" id="tabRes" aria-selected="false" aria-controls="results" type="button">Results<span class="count" id="resCount"></span></button>
-      </div>
-      <div class="feed" id="feed" role="tabpanel" aria-labelledby="tabChat" aria-live="polite"></div>
-      <div class="results" id="results" role="tabpanel" aria-labelledby="tabRes" hidden></div>
+    <section class="panel" aria-label="Team chat">
+      <div class="phead"><h2>Team chat</h2><span>What the team is doing, and what they need from you</span></div>
+      <div class="feed" id="feed" aria-live="polite"></div>
       <p class="notice" id="notice"></p>
       <form class="composer" id="form">
         <div class="rowc">
-          <label for="box" class="sr">Give your team a task</label>
-          <textarea id="box" rows="2" placeholder="Give your team a task…"></textarea>
+          <label for="box" class="sr">Give your team a task, or answer their question</label>
+          <textarea id="box" rows="2" placeholder="Give your team a task, or answer their question…"></textarea>
           <button class="send" id="send" type="submit">Send</button>
         </div>
-        <span class="hint">Each task uses your own Claude usage. The team writes plans, code and checks here; copy results into Claude Code to apply them to your project.</span>
+        <span class="hint">Each task uses your own Claude usage. Finished apps appear below in Projects.</span>
       </form>
     </section>
   </div>
 
   <section class="projects" aria-labelledby="projTitle">
     <h2 id="projTitle">Projects done by the team</h2>
-    <p class="sub">Finished work from the team, built and checked in Claude Code. Open a project to try it.</p>
+    <p class="sub" id="projSub">Web and mobile apps the team has built and checked. Open one to use it.</p>
     <div class="proj-grid" id="projects"></div>
   </section>
 
   <dialog class="viewer" id="viewer" aria-labelledby="viewerTitle">
-    <div class="vbar"><b id="viewerTitle">Project</b><button class="ghost" id="viewerClose" type="button">Close</button></div>
-    <iframe id="viewerFrame" title="Project preview"></iframe>
+    <div class="vbar"><b id="viewerTitle">Project</b><span id="viewerActs" class="actions" style="margin:0;padding:0"></span><button class="ghost" id="viewerClose" type="button">Close</button></div>
+    <div class="stage" id="stage"></div>
+    <p class="vnote" id="viewerNote"></p>
   </dialog>
+
+  <dialog class="confirm" id="confirm" aria-labelledby="confirmText">
+    <p id="confirmText">Delete this project?</p>
+    <div class="cacts"><button class="btn2" id="confirmNo" type="button">Cancel</button><button class="btn2 danger" id="confirmYes" type="button">Delete</button></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
 </div>
 
 <script>
@@ -339,52 +346,51 @@ document.getElementById('leadDesk').innerHTML = deskHTML('leader', true);
 document.getElementById('staff').innerHTML = STAFF.map(function(id){ return deskHTML(id); }).join('');
 
 var STATUS_TEXT = { idle:'Waiting for a task', thinking:'Thinking…', writing:'Writing…', done:'Done', waiting:'Waiting for teammates' };
-function setStatus(id, s){
+function setStatus(id, s, text){
   var d = document.getElementById('desk-'+id);
   if (!d) return;
   d.setAttribute('data-s', s);
-  d.querySelector('.st').textContent = STATUS_TEXT[s] || s;
+  d.querySelector('.st').textContent = text || STATUS_TEXT[s] || s;
 }
 function resetStatuses(){ Object.keys(TEAM).forEach(function(id){ setStatus(id,'idle'); }); }
 
-// ---------- state ----------
-var KEY = 'agent-office-v1';
-var state = { msgs: [], results: [] };
-try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && saved.msgs) state = saved; } catch(e) {}
-function save(){ try { localStorage.setItem(KEY, JSON.stringify({ msgs: state.msgs.slice(-80), results: state.results.slice(-40) })); } catch(e) {} }
+// ---------- helpers ----------
 var uid = 0; function newId(){ return 'm' + Date.now().toString(36) + (uid++); }
 function clock(){ var d = new Date(), h = d.getHours(), m = d.getMinutes(); return (h%12||12)+':'+(m<10?'0':'')+m+(h<12?' am':' pm'); }
-
-// ---------- rendering ----------
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
-function inline(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); }
-function rich(text){
-  var parts = String(text||'').split(/```[^\n]*\n?/), out = '';
-  for (var i = 0; i < parts.length; i++){
-    if (i % 2) out += '<pre><code>' + esc(parts[i].replace(/\n$/,'')) + '</code></pre>';
-    else if (parts[i].trim()) parts[i].trim().split(/\n{2,}/).forEach(function(p){ out += '<p>' + inline(p.replace(/^#{1,6}\s*/gm,'')) + '</p>'; });
-  }
-  return out;
+function slug(s){ return String(s || 'app').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'app'; }
+var toastEl = document.getElementById('toast'), toastT = null;
+function toast(t){ toastEl.textContent = t; toastEl.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.hidden = true; }, 2600); }
+function copyText(text, done){
+  function fallback(){ var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(true); } catch(e) { done(false); } t.remove(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ done(true); }, fallback);
+  else fallback();
 }
+
+// ---------- team chat (kept in this browser only) ----------
+var KEY = 'agent-office-v2';
+var state = { msgs: [] };
+try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && Array.isArray(saved.msgs)) state = saved; } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify({ msgs: state.msgs.slice(-120).map(function(m){ var c = {}; for (var k in m) if (k !== 'live') c[k] = m[k]; return c; }) })); } catch(e) {} }
+
+var feed = document.getElementById('feed');
+var pendingTask = null, busy = false, ctl = null;
 function msgHTML(m){
-  var name = m.who === 'you' ? 'You' : TEAM[m.who].name;
-  var role = m.who === 'you' ? '' : ' · ' + TEAM[m.who].role;
-  var h = '<div class="msg'+(m.who==='you'?' you':'')+(m.error?' err':'')+'" id="'+m.id+'">' + avatar(m.who) + '<div class="body">' +
-    '<span class="who"><b>'+esc(name)+'</b>'+esc(role)+' · '+esc(m.time)+'</span>';
-  if (m.thinking) h += '<details class="think"'+(m.streaming?' open':'')+'><summary>Thinking</summary><div class="t">'+esc(m.thinking)+'</div></details>';
+  var me = m.who === 'you';
+  var h = '<div class="msg'+(me?' you':'')+(m.kind?' '+m.kind:'')+'" id="'+m.id+'">' + avatar(m.who) + '<div class="body">' +
+    '<span class="who"><b>'+esc(me ? 'You' : TEAM[m.who].name)+'</b>'+(me ? '' : ' · '+esc(TEAM[m.who].role))+' · '+esc(m.time)+'</span>';
+  if (m.kind === 'ask') h += '<span class="tag">Needs your answer</span>';
   if (m.text) h += '<div class="text">'+esc(m.text)+'</div>';
-  if (m.error && m.retry && lastRun && m === state.msgs[state.msgs.length-1]) h += '<button class="copy" type="button" data-retry="1">Try again from '+esc(m.retry)+'\'s step</button>';
-  else if (m.streaming) h += '<div class="live">'+(m.thinking?'Working on it…':'Thinking…')+'</div>';
-  if (m.result) h += '<details class="res"><summary>Result</summary><div class="rich">'+rich(m.result)+'</div><button class="copy" type="button" data-copy="'+m.id+'">Copy result</button></details>';
-  else if (m.streaming && m.resultLen) h += '<div class="live">Writing the result… ('+m.resultLen+' characters)</div>';
+  if (m.live) h += '<div class="live">'+esc(m.live)+'</div>';
+  if (m.project) h += '<button class="copy" type="button" data-open="'+esc(m.project)+'">Open project</button>';
+  if (m.retry && pendingTask && !busy && m === state.msgs[state.msgs.length-1]) h += '<button class="copy" type="button" data-retry="1">Try again</button>';
   return h + '</div></div>';
 }
-var feed = document.getElementById('feed');
+var SUGGESTIONS = ['Build a booking web app for my salon. Ask me questions first.', 'Make a mobile app to track my daily water intake.', 'Build a simple sales and expenses tracker for a small shop.', 'Make a mobile app for my salon customers to book appointments.'];
 function renderFeed(){
   if (!state.msgs.length){
-    feed.innerHTML = '<div class="empty"><h3>Give your team a task</h3><p>Aisyah plans it, the team does the work, and you watch it happen in the office.</p><div class="chips">' +
-      ['Plan a booking website for my salon. Ask me questions first.','Design the database for a simple SaaS that tracks gym memberships.','Build a contact form with spam protection, then test and security-check it.','Make a simple Android app (APK) for my salon bookings.']
-        .map(function(t){ return '<button class="chip" type="button">'+esc(t)+'</button>'; }).join('') + '</div></div>';
+    feed.innerHTML = '<div class="empty"><h3>Give your team a task</h3><p>Ask for a web app or a mobile app. Aisyah plans it, the team builds and checks it, and the finished app appears in Projects below.</p><div class="chips">' +
+      SUGGESTIONS.map(function(t){ return '<button class="chip" type="button">'+esc(t)+'</button>'; }).join('') + '</div></div>';
     return;
   }
   feed.innerHTML = state.msgs.map(msgHTML).join('');
@@ -392,269 +398,405 @@ function renderFeed(){
 }
 function updateMsg(m){
   var el = document.getElementById(m.id);
-  var nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
   if (!el){ renderFeed(); return; }
-  var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m);
-  var wasOpen = el.querySelector('details.think') && el.querySelector('details.think').open;
-  el.replaceWith(tmp.firstChild);
-  if (wasOpen === false){ var d = document.getElementById(m.id).querySelector('details.think'); if (d) d.open = false; }
-  if (nearBottom) feed.scrollTop = feed.scrollHeight;
+  var near = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
+  var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); el.replaceWith(tmp.firstChild);
+  if (near) feed.scrollTop = feed.scrollHeight;
 }
-function addMsg(m){ m.id = m.id || newId(); m.time = m.time || clock(); state.msgs.push(m); if (state.msgs.length === 1) renderFeed(); else { var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); feed.appendChild(tmp.firstChild); feed.scrollTop = feed.scrollHeight; } return m; }
+function addMsg(m){
+  m.id = newId(); m.time = clock(); state.msgs.push(m);
+  if (state.msgs.length === 1) renderFeed();
+  else { var tmp = document.createElement('div'); tmp.innerHTML = msgHTML(m); feed.appendChild(tmp.firstChild); feed.scrollTop = feed.scrollHeight; }
+  save(); return m;
+}
+function say(who, text, kind){ return addMsg({ who: who, text: text, kind: kind || '' }); }
 
-var resultsEl = document.getElementById('results');
-function renderResults(){
-  document.getElementById('resCount').textContent = state.results.length ? ' (' + state.results.length + ')' : '';
-  if (!state.results.length){ resultsEl.innerHTML = '<div class="empty"><h3>No results yet</h3><p>Code, database plans, test reports and security checks from your team will collect here.</p></div>'; return; }
-  resultsEl.innerHTML = state.results.slice().reverse().map(function(r){
-    return '<article class="card"><div class="card-head">'+avatar(r.who)+'<div><b>'+esc(TEAM[r.who].name)+' · '+esc(TEAM[r.who].role)+'</b><span>'+esc(r.task)+'</span></div><button class="copy" type="button" data-copyres="'+r.id+'">Copy</button></div><div class="rich">'+rich(r.result)+'</div></article>';
+// ---------- task board ----------
+function setBoard(task, steps, current){
+  document.getElementById('boardTask').textContent = task || 'No task yet. Type one in the team chat.';
+  document.getElementById('boardSteps').innerHTML = (steps || []).map(function(id, i){
+    var cls = current == null ? '' : (i < current ? 'did' : (i === current ? 'now' : ''));
+    return '<li class="'+cls+'">'+(i+1)+'. '+esc(TEAM[id].name)+'</li>';
   }).join('');
 }
 
-// ---------- tabs, copy, clear ----------
-var tabChat = document.getElementById('tabChat'), tabRes = document.getElementById('tabRes');
-function showTab(res){
-  tabChat.setAttribute('aria-selected', String(!res)); tabRes.setAttribute('aria-selected', String(res));
-  feed.hidden = res; resultsEl.hidden = !res;
-}
-tabChat.onclick = function(){ showTab(false); };
-tabRes.onclick = function(){ renderResults(); showTab(true); };
+// ---------- projects ----------
+// Paths are from the repo root. Opened from the repo's agent-office/ folder, step up one level;
+// as a published Claude artifact, the project files sit next to the page.
+var BASE = /\/agent-office\/(index\.html)?$/.test(location.pathname) ? '../' : '';
+// Projects built in Claude Code and shipped with this page.
+var FILE_PROJECTS = [
+  { id:'salon-mockup', source:'file', kind:'web', title:'Salon appointment page (mockup)', task:'Task 001',
+    summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
+    link:'mockups/salon-appointment.html', thumb:'mockups/salon-appointment.png',
+    crew:['leader','developer','tester','security-checker'], tests:'PASS', security:'CLEAR', createdAt:0 }
+];
+var teamProjects = [], building = null, projectsCol = null, savedOnline = false;
 
-function copyText(text, btn){
-  var done = function(){ var o = btn.textContent; btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = o; }, 1500); };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
-  else fallback();
-  function fallback(){ var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch(e) { btn.textContent = 'Select and copy manually'; } t.remove(); }
+function allProjects(){
+  var list = teamProjects.slice().sort(function(a, b){ return (b.createdAt||0) - (a.createdAt||0); });
+  return (building ? [building] : []).concat(list, FILE_PROJECTS);
 }
+function findProject(id){ return allProjects().filter(function(p){ return p.id === id; })[0]; }
+var ICONS = {
+  web: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><rect x="6" y="12" width="52" height="40" rx="5"/><line x1="6" y1="22" x2="58" y2="22"/><circle cx="13" cy="17" r="1.6" fill="currentColor"/><circle cx="19" cy="17" r="1.6" fill="currentColor"/></svg>',
+  mobile: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><rect x="18" y="5" width="28" height="54" rx="6"/><line x1="28" y1="51" x2="36" y2="51"/></svg>'
+};
+function verdictHTML(p){
+  if (p.isBuilding) return '<span class="wait">'+esc(p.stage)+'</span>';
+  var t = p.tests === 'PASS' ? '<span class="ok">Tests: PASS</span>' : '<span class="bad">Tests: '+esc(p.tests||'not run')+'</span>';
+  var s = p.security === 'CLEAR' ? '<span class="ok">Security: CLEAR TO SHIP</span>' : '<span class="bad">Security: '+esc(p.security||'not run')+'</span>';
+  return t + s;
+}
+function projectCard(p){
+  var thumb = p.thumb
+    ? '<button class="thumb" type="button" data-open="'+esc(p.id)+'" tabindex="-1" aria-hidden="true"><img src="'+esc(BASE+p.thumb)+'" alt="" loading="lazy"></button>'
+    : '<button class="thumb art" type="button" '+(p.isBuilding?'disabled':'data-open="'+esc(p.id)+'"')+' tabindex="-1" aria-hidden="true">'+ICONS[p.kind === 'mobile' ? 'mobile' : 'web']+'<span>'+esc(p.title)+'</span></button>';
+  var acts = '';
+  if (!p.isBuilding){
+    acts += '<button class="open" type="button" data-open="'+esc(p.id)+'">Open project</button>';
+    if (p.kind === 'mobile' && p.html) acts += '<button class="btn2" type="button" data-apk="'+esc(p.id)+'">Build APK</button>';
+    if (p.html) acts += '<button class="btn2" type="button" data-code="'+esc(p.id)+'">Copy code</button>';
+    if (p.source !== 'file') acts += '<button class="btn2 danger" type="button" data-del="'+esc(p.id)+'">Delete</button>';
+  }
+  return '<article class="proj'+(p.isBuilding?' building':'')+'">' + thumb + '<div class="pbody">' +
+    '<h3>'+esc(p.title)+'</h3><div class="meta"><span class="kind">'+(p.kind === 'mobile' ? 'Mobile app' : 'Web app')+'</span>'+(p.source === 'file' && p.task ? '<span class="kind">'+esc(p.task)+'</span>' : '')+'</div>' +
+    '<p>'+esc(p.summary)+'</p>' +
+    '<div class="crew">'+(p.crew||[]).filter(function(id){ return TEAM[id]; }).map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
+    '<div class="verdicts">'+verdictHTML(p)+'</div>' +
+    (p.issues && p.issues.length ? '<p>Open issues: '+esc(p.issues.slice(0,3).join('; '))+'</p>' : '') +
+    '<div class="actions">'+acts+'</div></div></article>';
+}
+function renderProjects(){ document.getElementById('projects').innerHTML = allProjects().map(projectCard).join(''); }
+
+// Saved projects live in the artifact's shared store, so they are there next time.
+function initStore(){
+  if (!(window.claude && window.claude.use)){ document.getElementById('projSub').textContent = 'Open this page in Claude to save new projects.'; return; }
+  window.claude.use('db').then(function(db){
+    if (!db){ document.getElementById('projSub').textContent = 'New projects stay only until you close this page (saving is not available in this view).'; return; }
+    projectsCol = db.collection('projects');
+    projectsCol.onSnapshot(function(snap){
+      savedOnline = true;
+      teamProjects = snap.docs.map(function(d){ var o = d.data() || {}; o.id = d.id; return o; });
+      renderProjects();
+    }, function(e){ document.getElementById('projSub').textContent = 'Saved projects could not be loaded (' + (e && e.code || 'error') + ').'; });
+  });
+}
+
+// ---------- project viewer ----------
+var viewer = document.getElementById('viewer'), stage = document.getElementById('stage');
+document.getElementById('viewerClose').onclick = function(){ viewer.close(); };
+viewer.addEventListener('close', function(){ stage.innerHTML = ''; });
+function showViewer(p, html){
+  viewer.classList.toggle('mobile', p.kind === 'mobile');
+  document.getElementById('viewerTitle').textContent = p.title;
+  document.getElementById('viewerActs').innerHTML = (p.kind === 'mobile' && p.html ? '<button class="btn2" type="button" data-apk="'+esc(p.id)+'">Build APK</button>' : '');
+  // Sandboxed: the app runs in its own locked box and cannot reach this dashboard or your data.
+  var f = document.createElement('iframe');
+  f.title = p.title + ' preview';
+  f.setAttribute('sandbox', 'allow-scripts allow-forms allow-modals allow-popups');
+  f.srcdoc = html;
+  stage.innerHTML = '';
+  if (p.kind === 'mobile'){ var ph = document.createElement('div'); ph.className = 'phone'; ph.appendChild(f); stage.appendChild(ph); }
+  else stage.appendChild(f);
+  document.getElementById('viewerNote').textContent = p.kind === 'mobile'
+    ? 'Phone preview. To install it on an Android phone, press Build APK and paste the instruction into Claude Code.'
+    : 'Live preview. What you type here is not saved.';
+  viewer.showModal();
+}
+function openProject(id){
+  var p = findProject(id); if (!p) return;
+  if (p.html) return showViewer(p, p.html);
+  fetch(BASE + p.link).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(html){ showViewer(p, html); })
+    .catch(function(){ var t = document.createElement('a'); t.href = BASE + p.link; t.target = '_blank'; t.rel = 'noopener'; document.body.appendChild(t); t.click(); t.remove(); });
+}
+function apkInstruction(p){
+  var s = slug(p.title);
+  return 'Build an Android APK for the "' + p.title + '" app that my Agent Office team made.\n\n' +
+    '1. In the Aiagent repository, create apps/' + s + '/ as a Capacitor app, following the "Android apps (APK)" section in CLAUDE.md and .claude/agents/developer.md.\n' +
+    '2. Save the HTML below as apps/' + s + '/src/index.html and make the build script copy it to www/index.html.\n' +
+    '3. Use appId com.example.' + s.replace(/-/g, '') + ' (placeholder) and appName "' + p.title + '".\n' +
+    '4. Build a debug APK with scripts/build-apk.sh apps/' + s + ', have the tester and security-checker check it, then send me the APK.\n\n' +
+    '```html\n' + p.html + '\n```\n';
+}
+
+// ---------- delete ----------
+var confirmDlg = document.getElementById('confirm'), toDelete = null;
+document.getElementById('confirmNo').onclick = function(){ confirmDlg.close(); };
+document.getElementById('confirmYes').onclick = function(){
+  confirmDlg.close();
+  var id = toDelete; toDelete = null; if (!id) return;
+  if (projectsCol && savedOnline) projectsCol.doc(id).delete().then(function(){ toast('Project deleted.'); }, function(e){ toast('Could not delete it (' + (e && e.code || 'error') + '). Only editors of this page can delete projects.'); });
+  else { teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }
+};
+
+// ---------- clicks ----------
+var box = document.getElementById('box');
 document.addEventListener('click', function(e){
-  var b = e.target.closest('[data-copy]'), r = e.target.closest('[data-copyres]'), chip = e.target.closest('.chip');
-  if (b){ var m = state.msgs.find(function(x){ return x.id === b.dataset.copy; }); if (m) copyText(m.result, b); }
-  if (r){ var x = state.results.find(function(y){ return y.id === r.dataset.copyres; }); if (x) copyText(x.result, r); }
-  if (chip){ box.value = chip.textContent; box.focus(); }
+  var t = e.target.closest('[data-open],[data-apk],[data-code],[data-del],[data-retry],.chip');
+  if (!t) return;
+  if (t.classList.contains('chip')){ box.value = t.textContent; box.focus(); return; }
+  if (t.dataset.open) return openProject(t.dataset.open);
+  if (t.dataset.retry){ if (!busy && pendingTask) runTask(pendingTask, true); return; }
+  var p = findProject(t.dataset.apk || t.dataset.code || t.dataset.del); if (!p) return;
+  if (t.dataset.apk) copyText(apkInstruction(p), function(ok){ toast(ok ? 'Copied. Paste it into Claude Code to build the APK.' : 'Copy failed. Use Copy code instead.'); });
+  else if (t.dataset.code) copyText(p.html, function(ok){ toast(ok ? 'Code copied.' : 'Copy failed.'); });
+  else if (t.dataset.del){ toDelete = p.id; document.getElementById('confirmText').textContent = 'Delete "' + p.title + '"? This cannot be undone.'; confirmDlg.showModal(); }
 });
 document.getElementById('clear').onclick = function(){
   if (busy) return;
-  state = { msgs: [], results: [] }; lastRun = null; save(); renderFeed(); renderResults(); resetStatuses(); setBoard(null);
+  state = { msgs: [] }; pendingTask = null; save(); renderFeed(); resetStatuses(); setBoard(null);
 };
 
-// ---------- board ----------
-function setBoard(task, steps, current){
-  document.getElementById('boardTask').textContent = task || 'No task yet. Type one in the team chat.';
-  var ol = document.getElementById('boardSteps');
-  ol.innerHTML = (steps || []).map(function(s, i){
-    var cls = current == null ? '' : (i < current ? 'did' : (i === current ? 'now' : ''));
-    return '<li class="'+cls+'">'+(i+1)+'. '+esc(TEAM[s.agent].name)+'</li>';
-  }).join('');
-}
-
 // ---------- Claude ----------
-var sample = null, busy = false, ctl = null;
+var sample = null;
 var notice = document.getElementById('notice');
-function say(text){ notice.textContent = text; notice.classList.toggle('on', !!text); }
+function setNotice(text){ notice.textContent = text; notice.classList.toggle('on', !!text); }
 if (window.claude && window.claude.use){
-  window.claude.use('sample').then(function(s){ sample = s; if (!s) say('Your team needs Claude to work, and it is not available in this view. Open this page in Claude to bring them to life.'); });
-} else {
-  say('Your team needs Claude to work. Open this page in Claude to bring them to life.');
-}
+  window.claude.use('sample').then(function(s){ sample = s; if (!s) setNotice('Your team needs Claude to work, and it is not available in this view. Open this page in Claude to bring them to life.'); });
+} else setNotice('Your team needs Claude to work. Open this page in Claude to bring them to life.');
+
 function errText(e){
   switch(e && e.code){
     case 'cancelled': return 'Stopped.';
     case 'not_granted': case 'sampling_disabled': case 'not_declared': case 'capability_disabled':
       return 'The team needs your permission to use Claude. Allow it when asked, or check this page\'s permissions.';
-    case 'rate_limited': return 'Claude is busy or you have reached a usage limit. Wait a little, then send the task again.';
-    case 'session_expired': return 'Your Claude session ended. Sign in again, then resend the task.';
+    case 'rate_limited': return 'Claude is busy or you have reached a usage limit. Wait a little, then press Try again.';
+    case 'session_expired': return 'Your Claude session ended. Sign in again, then press Try again.';
     case 'refused': return 'Claude declined this step. Press Try again, or reword the task.';
-    case 'invalid_json': return 'Aisyah\'s plan came back unreadable. Send the task again.';
-    case 'prompt_too_large': return 'This is too much work for one go. Split the task into smaller parts.';
-    default: return 'Could not reach Claude. Send the task again.';
+    case 'invalid_json': return 'An answer came back unreadable. Press Try again.';
+    case 'prompt_too_large': return 'This is too much work for one go. Ask for a smaller first version.';
+    case 'too_large': return 'The app came out too big to save. Ask for a smaller first version.';
+    case 'no_code': return 'Ravi did not return a working app file. Press Try again.';
+    default: return 'Could not reach Claude. Press Try again.';
   }
 }
-
 function history(){
-  return state.msgs.filter(function(m){ return (m.who === 'you' || m.who === 'leader') && m.text && !m.error; })
-    .slice(-10).map(function(m){ return (m.who === 'you' ? 'Owner' : 'Aisyah (Project Leader)') + ': ' + m.text; }).join('\n');
+  return state.msgs.filter(function(m){ return (m.who === 'you' || m.who === 'leader') && m.text && m.kind !== 'err'; })
+    .slice(-12).map(function(m){ return (m.who === 'you' ? 'Owner' : 'Aisyah') + ': ' + m.text; }).join('\n');
 }
-function parseSections(t){
-  function get(h){
-    var re = new RegExp('#{2,3}\\s*' + h + '\\s*\\n([\\s\\S]*?)(?=\\n#{2,3}\\s*(?:THINKING|APPROACH|MESSAGE|RESULT)\\b|$)', 'i');
-    var m = t.match(re); return m ? m[1].trim() : '';
+function persona(id){ return 'You are ' + TEAM[id].name + ', the ' + TEAM[id].role + ' on a small AI software team that builds web apps and mobile apps for the owner, who is not a full-time engineer. ' + TEAM[id].prompt + '\n'; }
+var APP_RULES =
+  'How apps are made here: each app is ONE self-contained HTML file (inline CSS and JavaScript). It runs in a locked preview box: no external scripts, images or network requests (a Google Fonts stylesheet is fine if the CSS also names system fallback fonts); alert(), confirm() and prompt() may be blocked, so build messages into the page; localStorage may be unavailable, so wrap it in try/catch and keep data in memory when it fails. There is no server: data stays on the device. ' +
+  'Web apps: responsive, phone first, then tablet and desktop. Mobile apps: designed for a 390px-wide phone screen, feel like a native app (app bar, bottom tab bar if there are several screens, large touch targets of at least 44px, respect safe areas); later they are wrapped into an Android APK with Capacitor in Claude Code.';
+
+function extractCode(t){
+  var m = t.match(/```(?:html)?\s*\n([\s\S]*?)(?:```|$)/i);
+  var code = m ? m[1] : '';
+  if (!/<html|<body|<div|<main/i.test(code)){ var i = t.search(/<!doctype html|<html/i); code = i >= 0 ? t.slice(i) : ''; }
+  code = code.replace(/```\s*$/, '').trim();
+  return /<\/(body|html)>\s*$/i.test(code) || code.length > 400 ? code : '';
+}
+function section(t, name){
+  var re = new RegExp('#{2,3}\\s*' + name + '\\s*\\n([\\s\\S]*?)(?=\\n#{2,3}\\s*(?:MESSAGE|CODE)\\b|```|$)', 'i');
+  var m = t.match(re); return m ? m[1].trim() : '';
+}
+
+// Ravi writes a whole app file. Long answers can be cut short, so ask him to carry on (twice at most).
+async function writeApp(prompt, liveMsg){
+  var messages = [{ role: 'user', content: prompt }], full = '', base = '';
+  for (var round = 0; round < 3; round++){
+    var r = await sample(messages, { signal: ctl.signal, cache: false, onText: function(u){
+      var chars = (base + u.text).length;
+      liveMsg.live = 'Writing the app… ' + chars.toLocaleString() + ' characters';
+      setStatus('developer', 'writing');
+      updateMsg(liveMsg);
+    }});
+    full = base + r.text;
+    if (!r.truncated) break;
+    base = full;
+    messages = [{ role: 'user', content: prompt }, { role: 'assistant', content: full }, { role: 'user', content: 'You were cut off. Continue exactly where you stopped: output only the rest of the file, with no repetition and no commentary.' }];
   }
-  return { thinking: get('(?:APPROACH|THINKING)'), message: get('MESSAGE'), result: get('RESULT') };
-}
-var NOTE = 'The team works only in this chat. It cannot see or change the owner\'s real code repository; it produces plans, code and checks that the owner will paste into Claude Code.';
-
-function planPrompt(task, hist){
-  return 'You are Aisyah, the Project Leader of a small AI software team that builds websites, mobile apps and SaaS products for the owner, who is not a full-time engineer. ' + TEAM.leader.prompt + '\n' +
-    'Your teammates: developer (Ravi, writes app code), database-manager (Mei, schemas, migrations, data safety), tester (Daniel, tests and bug reports), security-checker (Farid, security review, can block release).\n' + NOTE + '\n\n' +
-    'Conversation so far:\n' + (hist || '(none)') + '\n\nThe owner\'s new message:\n"""' + task + '"""\n\n' +
-    'Decide what to do:\n- Small talk, or a question you can answer yourself: answer it and return an empty plan.\n' +
-    '- Too vague to build well (platform, main users or must-have features unclear): ask at most 3 short questions and return an empty plan.\n' +
-    '- Otherwise plan 1 to 5 steps. Order: database-manager first only if stored data is involved, then developer, then tester, then security-checker. Keep the first version small.\n\n' +
-    'Reply with only JSON in this shape:\n{"approach": ["short note on how you will handle this"], "reply": "what you say to the owner, 1-3 friendly sentences", "questions": ["short question"], "plan": [{"agent": "developer", "instruction": "specific instruction for this teammate"}]}';
-}
-function agentPrompt(id, task, hist, plan, step, outputs){
-  var c = TEAM[id];
-  return 'You are helping the owner as ' + c.name + ', the ' + c.role + ' on a small AI software team that builds websites, mobile apps and SaaS products for the owner.\n' + c.prompt + '\n' + NOTE + '\n\n' +
-    'Conversation with the owner:\n' + (hist || '(none)') + '\n\nThe current request:\n"""' + task + '"""\n\n' +
-    'Project Leader\'s plan:\n' + plan.map(function(s, i){ return (i+1) + '. ' + TEAM[s.agent].role + ': ' + s.instruction; }).join('\n') + '\n\n' +
-    'Your assignment (step ' + (plan.indexOf(step)+1) + '): ' + step.instruction + '\n\n' +
-    'Work already done by teammates:\n' + (outputs.length ? outputs.map(function(o){ return '[' + TEAM[o.who].role + '] ' + o.message + '\n' + o.result.slice(0, 5000); }).join('\n\n') : '(nothing yet)') + '\n\n' +
-    'Write your answer in exactly these three sections, with these headings on their own lines:\n### APPROACH\n2-5 short bullet points on how you will tackle your assignment, in plain words.\n### MESSAGE\n1-3 friendly sentences to the team chat, in first person.\n### RESULT\nYour deliverable in Markdown: code in fenced blocks with file names, a schema, test cases, or findings. Focused and complete enough to paste into Claude Code. Keep it under about 150 lines; for a mockup, one self-contained HTML file is fine.';
-}
-function summaryPrompt(task, outputs){
-  return 'You are Aisyah, the Project Leader. The team just finished work on:\n"""' + task + '"""\n\nWhat each teammate delivered:\n' +
-    outputs.map(function(o){ return '[' + TEAM[o.who].role + '] ' + o.message + '\nResult excerpt:\n' + o.result.slice(0, 2500); }).join('\n\n') +
-    '\n\nWrite a short report to the owner in exactly two sections, with these headings on their own lines:\n### APPROACH\n2-4 bullet points: your review of the work (did tests pass, any security blockers).\n### MESSAGE\n3-6 sentences in plain words: what was made, the test and security verdicts, open risks, and the next step. Mention they can copy results from the Results tab into Claude Code.';
+  var code = extractCode(full);
+  if (!code) throw { code: 'no_code' };
+  return { message: section(full, 'MESSAGE'), code: code };
 }
 
-async function stream(m, who, prompt){
-  var r = await sample(prompt, { signal: ctl.signal, cache: false, onText: function(u){
-    var s = parseSections(u.text);
-    setStatus(who, s.message || s.result ? 'writing' : 'thinking');
-    m.thinking = s.thinking || m.thinking; m.text = s.message; m.resultLen = s.result.length;
-    updateMsg(m);
-  }});
-  var s = parseSections(r.text);
-  if (!s.thinking && !s.message && !s.result) s.message = r.text.trim();
-  return s;
-}
-
-var lastRun = null;
-
-async function runTask(task){
-  var hist = history();
-  addMsg({ who: 'you', text: task });
-  resetStatuses();
-  setBoard(task, [], null);
-  begin();
-  var lm = addMsg({ who: 'leader', text: '', streaming: true });
-  setStatus('leader', 'thinking');
-  try {
-    var p = await sample.json(planPrompt(task, hist), { signal: ctl.signal, cache: false });
-    var plan = (p && Array.isArray(p.plan) ? p.plan : []).filter(function(s){ return s && TEAM[s.agent] && s.agent !== 'leader' && s.instruction; }).slice(0, 5);
-    var qs = p && Array.isArray(p.questions) ? p.questions.filter(Boolean).slice(0, 3) : [];
-    var ap = p && (p.approach || p.thinking); lm.thinking = Array.isArray(ap) ? ap.map(function(t){ return '• ' + t; }).join('\n') : String(ap || '');
-    lm.text = String((p && p.reply) || 'Here is the plan.') + (!plan.length && qs.length ? '\n\n' + qs.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n') : '');
-    lm.streaming = false; updateMsg(lm); save();
-    if (!plan.length){ setStatus('leader', 'idle'); finish(); return; }
-    lastRun = { task: task, hist: hist, plan: plan, outputs: [], index: 0, summarized: false };
-  } catch (e) {
-    fail(lm, 'leader', e, false);
-    finish(); return;
-  }
-  await runSteps(lastRun);
-}
-
-async function runSteps(run){
-  if (!busy) begin();
-  setStatus('leader', 'waiting');
-  var current = null, who = 'leader';
-  try {
-    for (; run.index < run.plan.length; run.index++){
-      var step = run.plan[run.index];
-      setBoard(run.task, run.plan, run.index);
-      who = step.agent; setStatus(who, 'thinking');
-      current = addMsg({ who: who, text: '', streaming: true });
-      var s = await stream(current, who, agentPrompt(who, run.task, run.hist, run.plan, step, run.outputs));
-      current.streaming = false; current.thinking = s.thinking; current.text = s.message || 'Done. My result is attached.'; current.result = s.result; delete current.resultLen;
-      updateMsg(current);
-      if (s.result){ state.results.push({ id: newId(), who: who, task: run.task, result: s.result }); renderResults(); }
-      run.outputs.push({ who: who, message: current.text, result: s.result || '' });
-      setStatus(who, 'done'); save();
+// Daniel gets real evidence: load the app in a hidden locked box and collect any errors.
+function runInBox(html){
+  return new Promise(function(resolve){
+    var f = document.createElement('iframe'), errors = [], textLen = -1, done = false;
+    f.setAttribute('sandbox', 'allow-scripts allow-forms');
+    f.style.cssText = 'position:absolute;left:-9999px;width:390px;height:800px;border:0';
+    var probe = '<script>(function(){function s(m){try{parent.postMessage({agentOffice:1,err:String(m).slice(0,300)},"*")}catch(e){}}' +
+      'window.addEventListener("error",function(e){s((e.message||"error")+" (line "+e.lineno+")")});' +
+      'window.addEventListener("unhandledrejection",function(e){s("Unhandled promise rejection: "+(e.reason&&e.reason.message||e.reason))});' +
+      'window.addEventListener("load",function(){setTimeout(function(){try{parent.postMessage({agentOffice:1,loaded:(document.body&&document.body.innerText||"").trim().length,controls:document.querySelectorAll("button,input,select,textarea,a").length},"*")}catch(e){}},600)})})();<\/script>';
+    function onMsg(e){
+      if (e.source !== f.contentWindow || !e.data || !e.data.agentOffice) return;
+      if (e.data.err && errors.length < 12) errors.push(e.data.err);
+      if (e.data.loaded != null){ textLen = e.data.loaded; finish(e.data.controls); }
     }
-    setBoard(run.task, run.plan, run.plan.length);
-    who = 'leader'; setStatus('leader', 'thinking');
-    current = addMsg({ who: 'leader', text: '', streaming: true });
-    var sum = await stream(current, 'leader', summaryPrompt(run.task, run.outputs));
-    current.streaming = false; current.thinking = sum.thinking; current.text = sum.message || 'All done.'; updateMsg(current);
-    setStatus('leader', 'done'); run.summarized = true; lastRun = null; save();
+    function finish(controls){ if (done) return; done = true; window.removeEventListener('message', onMsg); f.remove();
+      resolve('Loaded in a 390px-wide test box. ' + (textLen < 0 ? 'The page did not finish loading within 4 seconds.' : 'Visible text: ' + textLen + ' characters; interactive controls: ' + controls + '.') +
+        (errors.length ? ' JavaScript errors: ' + errors.join(' | ') : ' No JavaScript errors.')); }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(f);
+    f.srcdoc = probe + html;
+    setTimeout(function(){ finish('?'); }, 4000);
+  });
+}
+
+function buildPrompt(plan, dataPlan, hist){
+  return persona('developer') + APP_RULES + '\n\n' +
+    'Conversation with the owner:\n' + (hist || '(none)') + '\n\n' +
+    'Build this ' + (plan.project.kind === 'mobile' ? 'MOBILE app' : 'WEB app') + ': "' + plan.project.title + '"\n' + plan.project.summary + '\n\n' +
+    'Brief from Aisyah (Project Leader):\n' + plan.brief + '\n\n' +
+    (dataPlan ? 'Data plan from Mei (Database Manager):\n' + dataPlan + '\n\n' : '') +
+    'Quality bar: a polished, working first version, not a sketch. Real-looking sample data so it is useful straight away (mark it as sample data). Every button works. Labels on every input, visible keyboard focus, good contrast, light and dark mode via prefers-color-scheme. Validate input and show friendly inline messages. Never put user text into innerHTML: use textContent. If the owner gave no brand name, use a [BRACKETED] placeholder. Keep it under about 700 lines.\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne or two plain sentences for the team chat about what you built (no code).\n### CODE\n```html\n<!doctype html> ... the complete file ...\n```';
+}
+function fixPrompt(plan, code, problems){
+  return persona('developer') + APP_RULES + '\n\nYou built "' + plan.project.title + '" (' + plan.project.kind + ' app). The tester and security checker found these problems:\n' + problems + '\n\n' +
+    'Fix all of them and keep everything else working. Current file:\n```html\n' + code + '\n```\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne plain sentence for the team chat about what you fixed.\n### CODE\n```html\n<!doctype html> ... the complete corrected file ...\n```';
+}
+function testPrompt(plan, code, runtime){
+  return persona('tester') + APP_RULES + '\n\nCheck this ' + plan.project.kind + ' app, "' + plan.project.title + '", against the brief.\nBrief:\n' + plan.brief + '\n\n' +
+    'Result of loading it in the test box: ' + runtime + '\n\nRead the code and walk through it as a user would: the normal path, empty and invalid input, very long input, a small screen, keyboard use, and what happens when storage is unavailable.\n```html\n' + code + '\n```\n\n' +
+    'FAIL only for critical or high problems: a JavaScript error, a must-have feature from the brief missing or broken, or the app unusable on a phone. Medium and low problems are listed but still PASS.\n' +
+    'Reply with only JSON: {"verdict": "PASS" or "FAIL", "message": "1-2 plain sentences for the team chat", "bugs": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
+}
+function securityPrompt(plan, code){
+  return persona('security-checker') + APP_RULES + '\n\nReview this front-end-only ' + plan.project.kind + ' app, "' + plan.project.title + '". There is no server, login or payment.\n```html\n' + code + '\n```\n\n' +
+    'Check: user input reaching innerHTML, eval, document.write or attributes (XSS); any secrets or keys; any external scripts or network requests; personal data kept without need; unsafe links (target=_blank without rel=noopener). For a mobile app, also anything that would be a problem once it is an Android APK.\n' +
+    'BLOCKED only for critical or high findings.\n' +
+    'Reply with only JSON: {"verdict": "CLEAR" or "BLOCKED", "message": "1-2 plain sentences for the team chat", "findings": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
+}
+function planPrompt(task, hist){
+  return persona('leader') + 'Your teammates: Ravi (developer, builds the app), Mei (database manager, plans the data), Daniel (tester), Farid (security checker).\n' + APP_RULES + '\n\n' +
+    'Conversation so far:\n' + (hist || '(none)') + '\n\nThe owner\'s new message:\n"""' + task + '"""\n\n' +
+    'Decide:\n- Small talk, or a question you can answer yourself: answer it, build=false.\n' +
+    '- Too vague to build well (who uses it, or the main thing it must do, is unclear): ask at most 3 short questions, build=false. If the owner already answered your questions above, or said to go ahead, build.\n' +
+    '- Otherwise build=true. Pick kind "mobile" if the owner says mobile, phone, Android, iPhone, APK or "app for my customers on their phone"; otherwise "web". Keep the first version small: a few screens, no logins, no payments, no server.\n' +
+    'Set needsData=true if the app stores records (bookings, items, entries).\n' +
+    'Reply with only JSON: {"reply": "1-3 friendly plain sentences to the owner; when building, say what the team will make", "questions": ["short question"], "build": true or false, ' +
+    '"project": {"title": "short app name", "kind": "web" or "mobile", "summary": "one sentence for the project card"}, "needsData": true or false, ' +
+    '"brief": "for Ravi: screens, features, must-haves and acceptance checks, as short bullet lines"}';
+}
+function dataPrompt(plan){
+  return persona('database-manager') + APP_RULES + '\n\nPlan the data for "' + plan.project.title + '" (' + plan.project.kind + ' app).\nBrief:\n' + plan.brief + '\n\n' +
+    'Keep it simple for a device-only first version: what records are kept, their fields and types, required fields, sample records, and how they are saved (in memory, plus localStorage in try/catch). Note what would change when it moves to a real database later.\n' +
+    'Reply with only JSON: {"message": "1-2 plain sentences for the team chat", "dataPlan": "the plan as short bullet lines for Ravi"}';
+}
+
+function sevList(items){ return (items || []).filter(function(b){ return b && b.title; }); }
+function serious(items){ return sevList(items).filter(function(b){ return /critical|high/i.test(b.severity || ''); }); }
+function setBuilding(stageText){ if (building){ building.stage = stageText; renderProjects(); } }
+
+async function runTask(task, isRetry){
+  if (!isRetry) say('you', task);
+  pendingTask = task;
+  var hist = history();
+  busy = true; setBusy(true); setNotice(''); ctl = new AbortController();
+  resetStatuses(); setBoard(task, ['leader'], 0);
+  var who = 'leader', live = null;
+  try {
+    setStatus('leader', 'thinking');
+    live = addMsg({ who: 'leader', text: '', live: 'Reading your message…' });
+    var plan = await sample.json(planPrompt(task, hist), { signal: ctl.signal, cache: false });
+    var qs = (plan && Array.isArray(plan.questions) ? plan.questions : []).filter(Boolean).slice(0, 3);
+    var willBuild = !!(plan && plan.build && plan.project && plan.project.title && plan.brief);
+    live.text = String((plan && plan.reply) || (willBuild ? 'On it.' : 'Could you tell me a bit more?'));
+    if (!willBuild && qs.length){ live.text += '\n\n' + qs.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n'); live.kind = 'ask'; }
+    delete live.live; updateMsg(live); save();
+    if (!willBuild){ setStatus('leader', qs.length ? 'waiting' : 'idle', qs.length ? 'Waiting for your answer' : null); pendingTask = null; return; }
+
+    plan.project.kind = plan.project.kind === 'mobile' ? 'mobile' : 'web';
+    var steps = (plan.needsData ? ['database-manager'] : []).concat(['developer', 'tester', 'security-checker']);
+    var board = ['leader'].concat(steps);
+    building = { id: 'building', isBuilding: true, title: plan.project.title, kind: plan.project.kind, summary: plan.project.summary || '', task: '', crew: board, stage: 'Planning…' };
+    renderProjects();
+    setStatus('leader', 'waiting');
+
+    var dataPlan = '';
+    if (plan.needsData){
+      who = 'database-manager'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking'); setBuilding('Mei is planning the data…');
+      live = addMsg({ who: who, text: '', live: 'Planning the data…' });
+      var d = await sample.json(dataPrompt(plan), { signal: ctl.signal, cache: false });
+      dataPlan = String(d && d.dataPlan || ''); live.text = String(d && d.message || 'Data plan is ready for Ravi.'); delete live.live; updateMsg(live); save();
+      setStatus(who, 'done');
+    }
+
+    who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking'); setBuilding('Ravi is building the app…');
+    live = addMsg({ who: who, text: '', live: 'Starting…' });
+    var built = await writeApp(buildPrompt(plan, dataPlan, hist), live);
+    var code = built.code;
+    live.text = built.message || 'The first version is ready for testing.'; delete live.live; updateMsg(live); save();
+    setStatus(who, 'done');
+
+    async function check(round){
+      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Testing…'); setBuilding((round ? 'Re-testing' : 'Daniel is testing') + '…');
+      var runtime = await runInBox(code);
+      who = 'tester'; live = addMsg({ who: who, text: '', live: 'Testing the app…' });
+      var t = await sample.json(testPrompt(plan, code, runtime), { signal: ctl.signal, cache: false });
+      live.text = String(t && t.message || 'Testing finished.'); delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      who = 'security-checker'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Checking…'); setBuilding((round ? 'Re-checking security' : 'Farid is checking security') + '…');
+      live = addMsg({ who: who, text: '', live: 'Checking security…' });
+      var s = await sample.json(securityPrompt(plan, code), { signal: ctl.signal, cache: false });
+      live.text = String(s && s.message || 'Security check finished.'); delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      var tv = (t && t.verdict === 'PASS' && !serious(t.bugs).length) ? 'PASS' : 'FAIL';
+      var sv = (s && s.verdict === 'CLEAR' && !serious(s.findings).length) ? 'CLEAR' : 'BLOCKED';
+      return { tests: tv, security: sv, bugs: sevList(t && t.bugs), findings: sevList(s && s.findings) };
+    }
+
+    var res = await check(0);
+    if (res.tests !== 'PASS' || res.security !== 'CLEAR'){
+      var problems = res.bugs.concat(res.findings).map(function(b){ return '- [' + (b.severity || 'medium') + '] ' + b.title + ': ' + (b.fix || ''); }).join('\n');
+      who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Fixing…'); setBuilding('Ravi is fixing what the team found…');
+      live = addMsg({ who: who, text: '', live: 'Fixing…' });
+      var fixed = await writeApp(fixPrompt(plan, code, problems), live);
+      code = fixed.code; live.text = fixed.message || 'Fixed. Sending it back for checks.'; delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      res = await check(1);
+    }
+
+    if (code.length > 240000) throw { code: 'too_large' };
+    var project = { title: plan.project.title, kind: plan.project.kind, summary: plan.project.summary || '', task: task.slice(0, 200),
+      html: code, tests: res.tests, security: res.security,
+      issues: res.bugs.concat(res.findings).map(function(b){ return b.title + ' (' + (b.severity || 'low') + ')'; }).slice(0, 8),
+      crew: board, createdAt: Date.now() };
+    var id;
+    if (projectsCol && savedOnline){ var ref = projectsCol.doc(); id = ref.id; await ref.set(project); }
+    else { id = 'local-' + Date.now().toString(36); project.id = id; teamProjects.push(project); }
+    building = null; renderProjects();
+
+    who = 'leader'; setBoard(task, board, board.length); setStatus('leader', 'done');
+    var ok = res.tests === 'PASS' && res.security === 'CLEAR';
+    var summary = '"' + project.title + '" is ready in Projects below. Tests: ' + res.tests + ' · Security: ' + (res.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' +
+      (project.issues.length ? ' Open issues to look at later: ' + project.issues.slice(0, 3).join('; ') + '.' : '') +
+      (ok ? '' : ' It still has serious problems, so treat it as a draft and tell me what to change.') +
+      (project.kind === 'mobile' ? ' To put it on an Android phone, open it and press Build APK.' : '') +
+      ' Tell me what you would like changed next.';
+    var m = addMsg({ who: 'leader', text: summary, kind: 'done' }); m.project = id; updateMsg(m); save();
+    pendingTask = null;
   } catch (e) {
-    fail(current, who, e, true);
+    building = null; renderProjects();
+    if (live && !live.text){ var i = state.msgs.indexOf(live); if (i >= 0) state.msgs.splice(i, 1); renderFeed(); }
+    else if (live){ delete live.live; updateMsg(live); }
+    var code0 = e && e.code ? e.code : 'unknown';
+    if (code0 === 'cancelled') pendingTask = null;
+    var em = addMsg({ who: who, kind: 'err', text: errText(e) + (code0 !== 'cancelled' && code0 !== 'unknown' ? ' (' + code0 + ')' : ''), retry: code0 !== 'cancelled' && code0 !== 'not_granted' && code0 !== 'sampling_disabled' });
+    setStatus(who, 'idle');
+    busy = false; updateMsg(em);
   } finally {
-    finish();
+    busy = false; setBusy(false); ctl = null; save();
   }
 }
-
-function fail(m, who, e, canResume){
-  if (m){
-    m.streaming = false;
-    if (e && e.text && !m.text){ var ps = parseSections(e.text); m.text = ps.message || ''; m.thinking = m.thinking || ps.thinking; }
-    if (!m.text && !m.thinking){ var i = state.msgs.indexOf(m); if (i >= 0) state.msgs.splice(i, 1); }
-  }
-  var code = e && e.code ? e.code : 'unknown';
-  var resumable = canResume && lastRun && code !== 'not_granted' && code !== 'sampling_disabled';
-  addMsg({ who: who, error: true, code: code, retry: resumable ? TEAM[who].name : '',
-    text: errText(e) + (code !== 'cancelled' ? ' (reason: ' + code + (e && e.message ? ', ' + String(e.message).slice(0, 140) : '') + ')' : '') });
-  renderFeed(); setStatus(who, 'idle'); save();
-}
-
-function begin(){ busy = true; setBusy(true); say(''); ctl = new AbortController(); }
-function finish(){ busy = false; setBusy(false); ctl = null; }
-
-document.addEventListener('click', function(e){
-  var r = e.target.closest('[data-retry]');
-  if (!r || busy || !lastRun || !sample) return;
-  r.disabled = true;
-  runSteps(lastRun);
-});
 
 // ---------- composer ----------
-var form = document.getElementById('form'), box = document.getElementById('box'), sendBtn = document.getElementById('send');
+var form = document.getElementById('form'), sendBtn = document.getElementById('send');
 function setBusy(b){ sendBtn.textContent = b ? 'Stop' : 'Send'; sendBtn.classList.toggle('stop', b); box.disabled = b; }
 form.addEventListener('submit', function(e){
   e.preventDefault();
   if (busy){ if (ctl) ctl.abort(); return; }
   var t = box.value.trim(); if (!t) return;
-  if (!sample){ say('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.'); return; }
-  box.value = ''; showTab(false); runTask(t);
+  if (!sample){ setNotice('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.'); return; }
+  box.value = ''; runTask(t);
 });
 box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
 
-// ---------- projects done by the team ----------
-// Add a new entry here each time the team finishes a project in Claude Code.
-// Paths are from the repo root. Opened from the repo's agent-office/ folder, step up one level;
-// as a published Claude artifact, the project files sit next to the page.
-var BASE = /\/agent-office\/(index\.html)?$/.test(location.pathname) ? '../' : '';
-var PROJECTS = [
-  { title:'Salon appointment page (mockup)', task:'Task 001',
-    summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
-    link:'mockups/salon-appointment.html', thumb:'mockups/salon-appointment.png',
-    crew:['leader','developer','tester','security-checker'],
-    verdicts:[{ who:'tester', text:'Tests: PASS', cls:'ok' }, { who:'security-checker', text:'Security: CLEAR TO SHIP', cls:'ok' }] }
-];
-function renderProjects(){
-  document.getElementById('projects').innerHTML = PROJECTS.map(function(p, i){
-    return '<article class="proj">' +
-      '<a class="thumb" href="'+esc(BASE+p.link)+'" target="_blank" rel="noopener" data-project="'+i+'" aria-hidden="true" tabindex="-1"><img src="'+esc(BASE+p.thumb)+'" alt="" loading="lazy"></a>' +
-      '<div class="pbody"><h3>'+esc(p.title)+'</h3><p>'+esc(p.task)+' · '+esc(p.summary)+'</p>' +
-      '<div class="crew">'+p.crew.map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
-      '<div class="verdicts">'+p.verdicts.map(function(v){ return '<span class="'+esc(v.cls)+'">'+esc(v.text)+'</span>'; }).join('')+'</div>' +
-      '<a class="open" href="'+esc(BASE+p.link)+'" target="_blank" rel="noopener" data-project="'+i+'">Open project</a></div></article>';
-  }).join('');
-}
-renderProjects();
-
-// Open a project inside the dashboard. Inside Claude a new tab is blocked, so load the
-// file next to this page and show it in a viewer. If loading fails (for example when the
-// dashboard is opened straight from disk), fall back to the plain link in a new tab.
-var viewer = document.getElementById('viewer'), viewerFrame = document.getElementById('viewerFrame');
-document.getElementById('viewerClose').onclick = function(){ viewer.close(); };
-viewer.addEventListener('close', function(){ viewerFrame.srcdoc = ''; });
-document.addEventListener('click', function(e){
-  var a = e.target.closest('[data-project]');
-  if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
-  e.preventDefault();
-  var p = PROJECTS[+a.dataset.project];
-  fetch(BASE + p.link).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); }).then(function(html){
-    document.getElementById('viewerTitle').textContent = p.title;
-    viewerFrame.srcdoc = html;
-    viewer.showModal();
-  }).catch(function(){
-    var t = document.createElement('a'); t.href = a.href; t.target = '_blank'; t.rel = 'noopener'; document.body.appendChild(t); t.click(); t.remove();
-  });
-});
-
-renderFeed(); renderResults();
+renderFeed(); renderProjects(); initStore();
 })();
 </script>
 </body>
