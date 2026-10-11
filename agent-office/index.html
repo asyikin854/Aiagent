@@ -601,21 +601,24 @@ box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKe
 
 // ---------- projects done by the team ----------
 // Add a new entry here each time the team finishes a project in Claude Code.
+// Paths are from the repo root. Opened from the repo's agent-office/ folder, step up one level;
+// as a published Claude artifact, the project files sit next to the page.
+var BASE = /\/agent-office\/(index\.html)?$/.test(location.pathname) ? '../' : '';
 var PROJECTS = [
   { title:'Salon appointment page (mockup)', task:'Task 001',
     summary:'One-page booking form for a hair and beauty salon: name, phone, service, stylist, date and time. Look-and-feel only; nothing is saved yet.',
-    link:'../mockups/salon-appointment.html', thumb:'../mockups/salon-appointment.png',
+    link:'mockups/salon-appointment.html', thumb:'mockups/salon-appointment.png',
     crew:['leader','developer','tester','security-checker'],
     verdicts:[{ who:'tester', text:'Tests: PASS', cls:'ok' }, { who:'security-checker', text:'Security: CLEAR TO SHIP', cls:'ok' }] }
 ];
 function renderProjects(){
   document.getElementById('projects').innerHTML = PROJECTS.map(function(p){
     return '<article class="proj">' +
-      '<a class="thumb" href="'+esc(p.link)+'" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="'+esc(p.thumb)+'" alt="" loading="lazy"></a>' +
+      '<a class="thumb" href="'+esc(BASE+p.link)+'" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="'+esc(BASE+p.thumb)+'" alt="" loading="lazy"></a>' +
       '<div class="pbody"><h3>'+esc(p.title)+'</h3><p>'+esc(p.task)+' · '+esc(p.summary)+'</p>' +
       '<div class="crew">'+p.crew.map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
       '<div class="verdicts">'+p.verdicts.map(function(v){ return '<span class="'+esc(v.cls)+'">'+esc(v.text)+'</span>'; }).join('')+'</div>' +
-      '<a class="open" href="'+esc(p.link)+'" target="_blank" rel="noopener">Open project</a></div></article>';
+      '<a class="open" href="'+esc(BASE+p.link)+'" target="_blank" rel="noopener">Open project</a></div></article>';
   }).join('');
 }
 renderProjects();
