@@ -261,7 +261,7 @@ var TEAM = {
   tester: { name:'Daniel', role:'Tester', skin:'#D9A27A', hair:'#4A3424', style:'cap', shirt:'#2FA36B', acc:'', item:'checklist', wallItem:'clock', lid:'#9BE8C1',
     prompt:'You find problems before real users do. Write tests for the normal path, empty and invalid input, very long input, missing permissions, slow or failed network, and (for SaaS) one user trying to see another user\'s data. You do not fix app code; report each bug with steps, expected, actual and severity. For Android apps, also give an on-phone checklist: installs, opens, works offline, back button, rotation, keyboard does not cover fields; and check app id, version and permissions of the APK. End with a clear verdict: PASS or FAIL.' },
   'security-checker': { name:'Farid', role:'Security Checker', skin:'#C68B62', hair:'#191919', style:'short', shirt:'#3C4454', acc:'glasses', item:'lock', wallItem:'shield', lid:'#FFB4AE',
-    prompt:'You review; you do not change code. Check secrets in code, login and sessions, authorization (can one user reach another\'s data), injection (SQL, command, XSS), input and upload limits, rate limiting, dependencies, HTTPS and cookie settings, CORS, debug mode, and for mobile no secrets in the app bundle; for Android APKs also release builds not debuggable, only needed permissions, cleartext traffic off, no keystore or signing password in the repo. Report each finding with severity (CRITICAL, HIGH, MEDIUM, LOW), where, the risk in plain words, and a fix. End with a verdict: CLEAR TO SHIP, or BLOCKED if any CRITICAL or HIGH.' }
+    prompt:'You check and improve security: find the problems, fix them yourself with the smallest safe change, then confirm the fix. Only change code for security, never features, layout or wording. Check secrets in code, login and sessions, authorization (can one user reach another\'s data), injection (SQL, command, XSS), input and upload limits, rate limiting, dependencies, HTTPS and cookie settings, CORS, debug mode, and for mobile no secrets in the app bundle; for Android APKs also release builds not debuggable, only needed permissions, cleartext traffic off, no keystore or signing password in the repo. Report each finding with severity (CRITICAL, HIGH, MEDIUM, LOW), where, the risk in plain words, and whether you FIXED it. End with a verdict: CLEAR TO SHIP, or BLOCKED if any CRITICAL or HIGH is still open.' }
 };
 var STAFF = ['developer','database-manager','tester','security-checker'];
 
@@ -457,6 +457,7 @@ function projectCard(p){
     acts += '<button class="open" type="button" data-open="'+esc(p.id)+'">Open project</button>';
     if (p.kind === 'mobile' && p.html) acts += '<button class="btn2" type="button" data-apk="'+esc(p.id)+'">Build APK</button>';
     if (p.html) acts += '<button class="btn2" type="button" data-code="'+esc(p.id)+'">Copy code</button>';
+    if (p.html && p.source !== 'file') acts += '<button class="btn2" type="button" data-sec="'+esc(p.id)+'">Security check</button>';
     if (p.source !== 'file') acts += '<button class="btn2 danger" type="button" data-del="'+esc(p.id)+'">Delete</button>';
   }
   return '<article class="proj'+(p.isBuilding?' building':'')+'">' + thumb + '<div class="pbody">' +
@@ -464,6 +465,7 @@ function projectCard(p){
     '<p>'+esc(p.summary)+'</p>' +
     '<div class="crew">'+(p.crew||[]).filter(function(id){ return TEAM[id]; }).map(function(id){ return '<span>'+avatar(id)+esc(TEAM[id].name)+'</span>'; }).join('')+'</div>' +
     '<div class="verdicts">'+verdictHTML(p)+'</div>' +
+    (p.secured && p.secured.length ? '<p>Security fixes: '+esc(p.secured.slice(0,3).join('; '))+'</p>' : '') +
     (p.issues && p.issues.length ? '<p>Open issues: '+esc(p.issues.slice(0,3).join('; '))+'</p>' : '') +
     '<div class="actions">'+acts+'</div></div></article>';
 }
@@ -534,12 +536,13 @@ document.getElementById('confirmYes').onclick = function(){
 // ---------- clicks ----------
 var box = document.getElementById('box');
 document.addEventListener('click', function(e){
-  var t = e.target.closest('[data-open],[data-apk],[data-code],[data-del],[data-retry],.chip');
+  var t = e.target.closest('[data-open],[data-apk],[data-code],[data-del],[data-sec],[data-retry],.chip');
   if (!t) return;
   if (t.classList.contains('chip')){ box.value = t.textContent; box.focus(); return; }
   if (t.dataset.open) return openProject(t.dataset.open);
   if (t.dataset.retry){ if (!busy && pendingTask) runTask(pendingTask, true); return; }
-  var p = findProject(t.dataset.apk || t.dataset.code || t.dataset.del); if (!p) return;
+  var p = findProject(t.dataset.apk || t.dataset.code || t.dataset.del || t.dataset.sec); if (!p) return;
+  if (t.dataset.sec) return recheckSecurity(p);
   if (t.dataset.apk) copyText(apkInstruction(p), function(ok){ toast(ok ? 'Copied. Paste it into Claude Code to build the APK.' : 'Copy failed. Use Copy code instead.'); });
   else if (t.dataset.code) copyText(p.html, function(ok){ toast(ok ? 'Code copied.' : 'Copy failed.'); });
   else if (t.dataset.del){ toDelete = p.id; document.getElementById('confirmText').textContent = 'Delete "' + p.title + '"? This cannot be undone.'; confirmDlg.showModal(); }
@@ -594,13 +597,14 @@ function section(t, name){
 }
 
 // Ravi writes a whole app file. Long answers can be cut short, so ask him to carry on (twice at most).
-async function writeApp(prompt, liveMsg){
+async function writeApp(prompt, liveMsg, who){
+  who = who || 'developer';
   var messages = [{ role: 'user', content: prompt }], full = '', base = '';
   for (var round = 0; round < 3; round++){
     var r = await sample(messages, { signal: ctl.signal, cache: false, onText: function(u){
       var chars = (base + u.text).length;
-      liveMsg.live = 'Writing the app… ' + chars.toLocaleString() + ' characters';
-      setStatus('developer', 'writing');
+      liveMsg.live = (who === 'security-checker' ? 'Hardening the app… ' : 'Writing the app… ') + chars.toLocaleString() + ' characters';
+      setStatus(who, 'writing', who === 'security-checker' ? 'Fixing security…' : null);
       updateMsg(liveMsg);
     }});
     full = base + r.text;
@@ -659,11 +663,73 @@ function testPrompt(plan, code, runtime){
     'Reply with only JSON: {"verdict": "PASS" or "FAIL", "message": "1-2 plain sentences for the team chat", "bugs": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
 }
 function securityPrompt(plan, code){
-  return persona('security-checker') + APP_RULES + '\n\nReview this front-end-only ' + plan.project.kind + ' app, "' + plan.project.title + '". There is no server, login or payment.\n```html\n' + code + '\n```\n\n' +
-    'Check: user input reaching innerHTML, eval, document.write or attributes (XSS); any secrets or keys; any external scripts or network requests; personal data kept without need; unsafe links (target=_blank without rel=noopener). For a mobile app, also anything that would be a problem once it is an Android APK.\n' +
-    'BLOCKED only for critical or high findings.\n' +
+  return persona('security-checker') + APP_RULES + '\n\nReview this front-end-only ' + plan.project.kind + ' app, "' + plan.project.title + '". There is no server, login or payment. A Content-Security-Policy that blocks outside scripts and network calls has already been added.\n```html\n' + code + '\n```\n\n' +
+    'Check: user input reaching innerHTML, outerHTML, insertAdjacentHTML, eval, new Function, document.write or attributes (XSS); inline event handlers built from data; missing maxlength or type on inputs; any secrets or keys; any external scripts or network requests; personal data kept without need or kept longer than needed; unsafe links (target=_blank without rel=noopener). For a mobile app, also anything that would be a problem once it is an Android APK.\n' +
+    'Only list real problems you can point to in this code. BLOCKED only for critical or high findings.\n' +
     'Reply with only JSON: {"verdict": "CLEAR" or "BLOCKED", "message": "1-2 plain sentences for the team chat", "findings": [{"title": "short title", "severity": "critical|high|medium|low", "fix": "what to change"}]}';
 }
+function hardenPrompt(plan, code, findings){
+  return persona('security-checker') + APP_RULES + '\n\nYou reviewed "' + plan.project.title + '" (' + plan.project.kind + ' app) and found these security problems:\n' +
+    findings.map(function(f){ return '- [' + (f.severity || 'medium') + '] ' + f.title + ': ' + (f.fix || ''); }).join('\n') + '\n\n' +
+    'Fix them yourself with the smallest safe change (for example textContent instead of innerHTML, maxlength on inputs, removing data that is not needed). Change nothing else: keep every feature, the layout and the wording exactly as they are, and keep the Content-Security-Policy meta tag. Current file:\n```html\n' + code + '\n```\n\n' +
+    'Answer in exactly this format:\n### MESSAGE\nOne plain sentence for the team chat about what you fixed.\n### CODE\n```html\n<!doctype html> ... the complete fixed file ...\n```';
+}
+
+// Farid's baseline, applied to every app: a Content-Security-Policy that blocks outside scripts
+// and network calls, and safe links for anything that opens a new tab.
+var CSP = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'";
+function addBaseline(html){
+  var out = html, added = [];
+  if (!/http-equiv=["']?Content-Security-Policy/i.test(out)){
+    var meta = '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">';
+    out = /<head[^>]*>/i.test(out) ? out.replace(/<head[^>]*>/i, function(m){ return m + meta; }) : meta + out;
+    added.push('a Content-Security-Policy');
+  }
+  var n = 0;
+  out = out.replace(/<a\b([^>]*\btarget=["']?_blank["']?[^>]*)>/gi, function(m, attrs){ if (/\brel=/i.test(attrs)) return m; n++; return '<a' + attrs + ' rel="noopener noreferrer">'; });
+  if (n) added.push('safe settings on ' + n + ' new-tab link' + (n > 1 ? 's' : ''));
+  return { html: out, added: added };
+}
+var hasErrors = function(report){ return /JavaScript errors:/.test(report); };
+
+// Farid checks and improves security: baseline hardening, review, fixes, proof that nothing broke, re-check.
+async function secureApp(plan, code, hooks){
+  var who = 'security-checker', live;
+  hooks.step(who); setStatus(who, 'thinking', 'Checking…'); hooks.stage('Farid is checking security…');
+  var base = addBaseline(code), cur = base.html, fixed = base.added.slice(), changedLogic = false;
+  live = hooks.track(addMsg({ who: who, text: '', live: 'Checking security…' }));
+  var rv = await sample.json(securityPrompt(plan, cur), { signal: ctl.signal, cache: false });
+  var findings = sevList(rv && rv.findings), verdict = rv && rv.verdict;
+  var toFix = findings.filter(function(f){ return /critical|high|medium/i.test(f.severity || ''); });
+  if (!toFix.length){
+    live.text = String(rv && rv.message || 'No security problems found.') + (fixed.length ? ' I also added ' + fixed.join(' and ') + '.' : '');
+    delete live.live; updateMsg(live); save();
+  } else {
+    live.text = String(rv && rv.message || '') + ' I am fixing ' + toFix.length + ' of them now.'; delete live.live; updateMsg(live); save();
+    hooks.stage('Farid is fixing security…');
+    live = hooks.track(addMsg({ who: who, text: '', live: 'Hardening the app…' }));
+    var h = await writeApp(hardenPrompt(plan, cur, toFix), live, who);
+    var hb = addBaseline(h.code).html;
+    var before = await runInBox(cur), after = await runInBox(hb);
+    if (hasErrors(after) && !hasErrors(before)){
+      live.text = 'My security fix caused an error in the app, so I kept the previous version. These stay open: ' + toFix.map(function(f){ return f.title; }).join('; ') + '.';
+    } else {
+      cur = hb; changedLogic = true;
+      fixed = fixed.concat(toFix.map(function(f){ return f.title; }));
+      live.text = h.message || 'Fixed the security problems.';
+    }
+    delete live.live; updateMsg(live); save();
+    hooks.stage('Farid is re-checking security…'); setStatus(who, 'thinking', 'Re-checking…');
+    live = hooks.track(addMsg({ who: who, text: '', live: 'Re-checking…' }));
+    var r2 = await sample.json(securityPrompt(plan, cur), { signal: ctl.signal, cache: false });
+    findings = sevList(r2 && r2.findings); verdict = r2 && r2.verdict;
+    live.text = String(r2 && r2.message || 'Re-check finished.'); delete live.live; updateMsg(live); save();
+  }
+  setStatus(who, 'done');
+  return { code: cur, security: (verdict === 'CLEAR' && !serious(findings).length) ? 'CLEAR' : 'BLOCKED',
+    findings: findings, fixed: fixed, changedLogic: changedLogic };
+}
+
 function planPrompt(task, hist){
   return persona('leader') + 'Your teammates: Ravi (developer, builds the app), Mei (database manager, plans the data), Daniel (tester), Farid (security checker).\n' + APP_RULES + '\n\n' +
     'Conversation so far:\n' + (hist || '(none)') + '\n\nThe owner\'s new message:\n"""' + task + '"""\n\n' +
@@ -726,34 +792,43 @@ async function runTask(task, isRetry){
     live.text = built.message || 'The first version is ready for testing.'; delete live.live; updateMsg(live); save();
     setStatus(who, 'done');
 
-    async function check(round){
-      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Testing…'); setBuilding((round ? 'Re-testing' : 'Daniel is testing') + '…');
+    var hooks = { step: function(id){ who = id; setBoard(task, board, board.indexOf(id)); }, track: function(m){ live = m; return m; }, stage: setBuilding };
+    async function test(round){
+      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Testing…'); setBuilding((round ? 'Daniel is re-testing' : 'Daniel is testing') + '…');
       var runtime = await runInBox(code);
-      who = 'tester'; live = addMsg({ who: who, text: '', live: 'Testing the app…' });
+      live = addMsg({ who: who, text: '', live: 'Testing the app…' });
       var t = await sample.json(testPrompt(plan, code, runtime), { signal: ctl.signal, cache: false });
       live.text = String(t && t.message || 'Testing finished.'); delete live.live; updateMsg(live); save(); setStatus(who, 'done');
-      who = 'security-checker'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Checking…'); setBuilding((round ? 'Re-checking security' : 'Farid is checking security') + '…');
-      live = addMsg({ who: who, text: '', live: 'Checking security…' });
-      var s = await sample.json(securityPrompt(plan, code), { signal: ctl.signal, cache: false });
-      live.text = String(s && s.message || 'Security check finished.'); delete live.live; updateMsg(live); save(); setStatus(who, 'done');
-      var tv = (t && t.verdict === 'PASS' && !serious(t.bugs).length) ? 'PASS' : 'FAIL';
-      var sv = (s && s.verdict === 'CLEAR' && !serious(s.findings).length) ? 'CLEAR' : 'BLOCKED';
-      return { tests: tv, security: sv, bugs: sevList(t && t.bugs), findings: sevList(s && s.findings) };
+      return { tests: (t && t.verdict === 'PASS' && !serious(t.bugs).length) ? 'PASS' : 'FAIL', bugs: sevList(t && t.bugs) };
     }
 
-    var res = await check(0);
-    if (res.tests !== 'PASS' || res.security !== 'CLEAR'){
-      var problems = res.bugs.concat(res.findings).map(function(b){ return '- [' + (b.severity || 'medium') + '] ' + b.title + ': ' + (b.fix || ''); }).join('\n');
-      who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Fixing…'); setBuilding('Ravi is fixing what the team found…');
+    // Daniel tests; Ravi fixes what Daniel finds (one round).
+    var res = await test(0);
+    if (res.tests !== 'PASS'){
+      var problems = res.bugs.map(function(b){ return '- [' + (b.severity || 'medium') + '] ' + b.title + ': ' + (b.fix || ''); }).join('\n');
+      who = 'developer'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Fixing…'); setBuilding('Ravi is fixing what Daniel found…');
       live = addMsg({ who: who, text: '', live: 'Fixing…' });
       var fixed = await writeApp(fixPrompt(plan, code, problems), live);
-      code = fixed.code; live.text = fixed.message || 'Fixed. Sending it back for checks.'; delete live.live; updateMsg(live); save(); setStatus(who, 'done');
-      res = await check(1);
+      code = fixed.code; live.text = fixed.message || 'Fixed. Sending it back to Daniel.'; delete live.live; updateMsg(live); save(); setStatus(who, 'done');
+      res = await test(1);
     }
+
+    // Farid checks and improves security himself.
+    var sec = await secureApp(plan, code, hooks);
+    code = sec.code;
+    if (sec.changedLogic){
+      // Farid changed code, so Daniel makes sure the app still runs.
+      who = 'tester'; setBoard(task, board, board.indexOf(who)); setStatus(who, 'thinking', 'Re-testing…'); setBuilding('Daniel is re-testing after the security fixes…');
+      var again = await runInBox(code);
+      live = addMsg({ who: who, text: hasErrors(again) ? 'After Farid\'s security fixes the app shows an error: ' + again.replace(/^.*JavaScript errors: /, '') : 'I re-ran the app after Farid\'s security fixes: it loads with no errors.' });
+      if (hasErrors(again)) res.tests = 'FAIL';
+      setStatus(who, 'done');
+    }
+    res.security = sec.security; res.findings = sec.findings; res.secured = sec.fixed;
 
     if (code.length > 240000) throw { code: 'too_large' };
     var project = { title: plan.project.title, kind: plan.project.kind, summary: plan.project.summary || '', task: task.slice(0, 200),
-      html: code, tests: res.tests, security: res.security,
+      html: code, tests: res.tests, security: res.security, secured: (res.secured || []).slice(0, 8),
       issues: res.bugs.concat(res.findings).map(function(b){ return b.title + ' (' + (b.severity || 'low') + ')'; }).slice(0, 8),
       crew: board, createdAt: Date.now() };
     var id;
@@ -764,6 +839,7 @@ async function runTask(task, isRetry){
     who = 'leader'; setBoard(task, board, board.length); setStatus('leader', 'done');
     var ok = res.tests === 'PASS' && res.security === 'CLEAR';
     var summary = '"' + project.title + '" is ready in Projects below. Tests: ' + res.tests + ' · Security: ' + (res.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' +
+      (project.secured.length ? ' Farid secured: ' + project.secured.slice(0, 3).join('; ') + '.' : '') +
       (project.issues.length ? ' Open issues to look at later: ' + project.issues.slice(0, 3).join('; ') + '.' : '') +
       (ok ? '' : ' It still has serious problems, so treat it as a draft and tell me what to change.') +
       (project.kind === 'mobile' ? ' To put it on an Android phone, open it and press Build APK.' : '') +
@@ -779,6 +855,40 @@ async function runTask(task, isRetry){
     var em = addMsg({ who: who, kind: 'err', text: errText(e) + (code0 !== 'cancelled' && code0 !== 'unknown' ? ' (' + code0 + ')' : ''), retry: code0 !== 'cancelled' && code0 !== 'not_granted' && code0 !== 'sampling_disabled' });
     setStatus(who, 'idle');
     busy = false; updateMsg(em);
+  } finally {
+    busy = false; setBusy(false); ctl = null; save();
+  }
+}
+
+// Ask Farid to check and improve an existing project.
+async function recheckSecurity(p){
+  if (busy) return toast('The team is busy. Try again when they finish.');
+  if (!sample) return setNotice('Your team needs Claude to work. Open this page in Claude and allow it to use Claude.');
+  busy = true; setBusy(true); setNotice(''); ctl = new AbortController();
+  resetStatuses(); setBoard('Security check: ' + p.title, ['security-checker'], 0);
+  var live = null, who = 'security-checker';
+  say('you', 'Farid, please check and improve the security of "' + p.title + '".');
+  try {
+    var plan = { project: { title: p.title, kind: p.kind } };
+    var sec = await secureApp(plan, p.html, { step: function(id){ who = id; }, track: function(m){ live = m; return m; }, stage: function(){} });
+    var tests = p.tests;
+    if (sec.changedLogic){
+      var again = await runInBox(sec.code);
+      say('tester', hasErrors(again) ? 'After the security fixes the app shows an error: ' + again.replace(/^.*JavaScript errors: /, '') : 'I re-ran the app after the security fixes: it loads with no errors.');
+      if (hasErrors(again)) tests = 'FAIL';
+    }
+    var secured = (p.secured || []).concat(sec.fixed).filter(function(x, i, a){ return a.indexOf(x) === i; }).slice(0, 8);
+    var issues = sec.findings.map(function(b){ return b.title + ' (' + (b.severity || 'low') + ')'; }).slice(0, 8);
+    var patch = { html: sec.code, security: sec.security, tests: tests, secured: secured, issues: issues, securedAt: Date.now() };
+    if (sec.code.length > 240000) throw { code: 'too_large' };
+    if (projectsCol && savedOnline && p.id.indexOf('local-') !== 0) await projectsCol.doc(p.id).update(patch);
+    else { for (var k in patch) p[k] = patch[k]; renderProjects(); }
+    var m = say('security-checker', 'Security check done for "' + p.title + '": ' + (sec.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' + (sec.fixed.length ? ' I fixed: ' + sec.fixed.slice(0, 4).join('; ') + '.' : ' Nothing needed fixing.'), 'done');
+    m.project = p.id; updateMsg(m); save();
+    setBoard('Security check: ' + p.title, ['security-checker'], 1);
+  } catch (e) {
+    if (live && !live.text){ var i = state.msgs.indexOf(live); if (i >= 0) state.msgs.splice(i, 1); renderFeed(); }
+    say(who, errText(e), 'err'); setStatus(who, 'idle');
   } finally {
     busy = false; setBusy(false); ctl = null; save();
   }

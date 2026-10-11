@@ -39,7 +39,7 @@ To add a project, add an entry to `PROJECTS` in `agent-office/index.html` and a 
 
 The team can turn an app into an Android APK (built with Capacitor; see `CLAUDE.md`).
 
-- **Download without any tools:** every push that changes `apps/` builds the APKs on GitHub. Open the **Actions** tab, pick the latest **Android APK** run, and download **apks** under Artifacts.
+- **Download without any tools:** open the **Actions** tab on GitHub, choose **Android APK**, press **Run workflow**, then download **apks** under Artifacts when it finishes. It only runs when you start it.
 - **Build here:** `scripts/setup-android-sdk.sh` once, then `export ANDROID_HOME=~/android-sdk` and `scripts/build-apk.sh apps/<name>`. The APK appears in `dist/`.
 - **Install on your phone:** copy the APK to the phone, open it, and allow "install unknown apps" when Android asks. Debug APKs are for testing only.
 - **Releasing:** a signed release APK or a Play Store listing needs a signing key kept in GitHub secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`) and a Google Play developer account. The team will ask before doing either.

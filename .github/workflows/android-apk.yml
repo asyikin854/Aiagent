@@ -2,11 +2,8 @@ name: Android APK
 
 # Builds every Capacitor app under apps/ and attaches the APKs to the run
 # (open the run in the Actions tab, then download from "Artifacts").
+# Runs only when started by hand: Actions tab -> "Android APK" -> Run workflow.
 on:
-  push:
-    paths: ['apps/**', 'mockups/**', 'scripts/build-apk.sh', '.github/workflows/android-apk.yml']
-  pull_request:
-    paths: ['apps/**', 'mockups/**', 'scripts/build-apk.sh', '.github/workflows/android-apk.yml']
   workflow_dispatch:
     inputs:
       mode:

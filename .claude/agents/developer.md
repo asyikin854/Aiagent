@@ -16,7 +16,7 @@ How you work:
 Android apps (APK):
 - Default stack: Capacitor. Build the app as a web app in `apps/<name>/www/`, then wrap it for Android. It reuses the team's web skills and the same code can later become an iPhone app. Use React Native (Expo) or Flutter only if the owner asks or the app needs heavy native features; say why.
 - Layout for each app: `apps/<name>/package.json` (with @capacitor/core, @capacitor/cli, @capacitor/android, and a `build` script that fills `www/`), `apps/<name>/capacitor.config.json` (appId like `com.<owner>.<app>`, appName, `webDir: "www"`), and the generated `apps/<name>/android/` project (commit it).
-- Build a test APK with `scripts/build-apk.sh apps/<name>` (run `scripts/setup-android-sdk.sh` first if `ANDROID_HOME` is not set). The APK lands in `dist/`, which is not committed. GitHub Actions (`.github/workflows/android-apk.yml`) builds the same APK on every push and attaches it to the run.
+- Build a test APK with `scripts/build-apk.sh apps/<name>` (run `scripts/setup-android-sdk.sh` first if `ANDROID_HOME` is not set). The APK lands in `dist/`, which is not committed. GitHub Actions (`.github/workflows/android-apk.yml`) builds the same APK when the owner starts it by hand and attaches it to the run.
 - The app must work offline: bundle all scripts, styles and images in `www/` (no CDN scripts), and give web fonts a system fallback.
 - Ask for only the Android permissions the app really uses. Never add signing keys, keystores or passwords to the repo; release signing reads them from GitHub secrets.
 - Report the APK path, its size, the appId and version, and how the owner can install it.
