@@ -478,13 +478,23 @@ function initStore(){
   window.claude.use('db').then(function(db){
     if (!db){ document.getElementById('projSub').textContent = 'New projects stay only until you close this page (saving is not available in this view).'; return; }
     projectsCol = db.collection('projects');
-    projectsCol.onSnapshot(function(snap){
-      savedOnline = true;
-      teamProjects = snap.docs.map(function(d){ var o = d.data() || {}; o.id = d.id; return o; });
-      renderProjects();
-    }, function(e){ document.getElementById('projSub').textContent = 'Saved projects could not be loaded (' + (e && e.code || 'error') + ').'; });
+    // Live updates, plus a direct load on open and every 20 seconds in case live updates do not arrive in this view.
+    projectsCol.onSnapshot(applySnapshot, storeError);
+    loadProjects();
+    setInterval(function(){ if (!document.hidden && !busy) loadProjects(); }, 20000);
   });
 }
+function applySnapshot(snap){
+  savedOnline = true;
+  var fromStore = snap.docs.map(function(d){ var o = d.data() || {}; o.id = d.id; return o; });
+  var ids = {}; fromStore.forEach(function(p){ ids[p.id] = 1; });
+  // Keep projects saved in this view that the store has not reported back yet.
+  teamProjects = fromStore.concat(teamProjects.filter(function(p){ return p.justSaved && !ids[p.id]; }));
+  document.getElementById('projSub').textContent = 'Web and mobile apps the team has built and checked. Open one to use it.' + (fromStore.length ? ' (' + fromStore.length + ' saved)' : '');
+  renderProjects();
+}
+function storeError(e){ document.getElementById('projSub').textContent = 'Saved projects could not be loaded (' + (e && e.code || 'error') + '). They will appear when the connection comes back.'; }
+function loadProjects(){ if (projectsCol) projectsCol.get().then(applySnapshot, storeError); }
 
 // ---------- project viewer ----------
 var viewer = document.getElementById('viewer'), stage = document.getElementById('stage');
@@ -530,7 +540,7 @@ document.getElementById('confirmNo').onclick = function(){ confirmDlg.close(); }
 document.getElementById('confirmYes').onclick = function(){
   confirmDlg.close();
   var id = toDelete; toDelete = null; if (!id) return;
-  if (projectsCol && savedOnline) projectsCol.doc(id).delete().then(function(){ toast('Project deleted.'); }, function(e){ toast('Could not delete it (' + (e && e.code || 'error') + '). Only editors of this page can delete projects.'); });
+  if (projectsCol && savedOnline && id.indexOf('local-') !== 0) projectsCol.doc(id).delete().then(function(){ teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }, function(e){ toast('Could not delete it (' + (e && e.code || 'error') + '). Only editors of this page can delete projects.'); });
   else { teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }
 };
 
@@ -834,7 +844,10 @@ async function runTask(task, isRetry){
       crew: board, createdAt: Date.now() };
     var id;
     if (projectsCol && savedOnline){ var ref = projectsCol.doc(); id = ref.id; await ref.set(project); }
-    else { id = 'local-' + Date.now().toString(36); project.id = id; teamProjects.push(project); }
+    else id = 'local-' + Date.now().toString(36);
+    // Show it right away, without waiting for the store to report back.
+    project.id = id; project.justSaved = true;
+    teamProjects = teamProjects.filter(function(p){ return p.id !== id; }).concat([project]);
     building = null; renderProjects();
 
     who = 'leader'; setBoard(task, board, board.length); setStatus('leader', 'done');
@@ -883,7 +896,8 @@ async function recheckSecurity(p){
     var patch = { html: sec.code, security: sec.security, tests: tests, secured: secured, issues: issues, securedAt: Date.now() };
     if (sec.code.length > 240000) throw { code: 'too_large' };
     if (projectsCol && savedOnline && p.id.indexOf('local-') !== 0) await projectsCol.doc(p.id).update(patch);
-    else { for (var k in patch) p[k] = patch[k]; renderProjects(); }
+    for (var k in patch) p[k] = patch[k];
+    renderProjects();
     var m = say('security-checker', 'Security check done for "' + p.title + '": ' + (sec.security === 'CLEAR' ? 'CLEAR TO SHIP' : 'BLOCKED') + '.' + (sec.fixed.length ? ' I fixed: ' + sec.fixed.slice(0, 4).join('; ') + '.' : ' Nothing needed fixing.'), 'done');
     m.project = p.id; updateMsg(m); save();
     setBoard('Security check: ' + p.title, ['security-checker'], 1);
