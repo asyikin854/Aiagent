@@ -473,27 +473,52 @@ function projectCard(p){
 function renderProjects(){ document.getElementById('projects').innerHTML = allProjects().map(projectCard).join(''); }
 
 // Saved projects live in the artifact's shared store, so they are there next time.
+// A copy published with the page (projects-snapshot.json) shows them even if the store cannot be reached.
+var VERSION = 'v11';
+var storeState = 'Loading saved projects…', storeLoaded = false;
+function setStoreState(t, retry){
+  storeState = t;
+  document.getElementById('projSub').innerHTML = 'Web and mobile apps the team has built and checked. Open one to use it. <span class="kind">' + esc(t) + '</span>' +
+    (retry ? ' <button class="btn2" type="button" id="storeRetry" style="min-height:32px">Try again</button>' : '');
+  var b = document.getElementById('storeRetry'); if (b) b.onclick = function(){ setStoreState('Loading saved projects…'); if (projectsCol) loadProjects(); else initStore(); };
+}
+var snapshotProjects = [];
+function loadSnapshot(){
+  fetch(BASE ? BASE + 'agent-office/projects-snapshot.json' : 'projects-snapshot.json').then(function(r){ if (!r.ok) throw 0; return r.json(); }).then(function(list){
+    if (!Array.isArray(list)) return;
+    snapshotProjects = list.map(function(p){ p.fromSnapshot = true; return p; });
+    if (!storeLoaded){ mergeProjects([]); }
+  }).catch(function(){});
+}
+function mergeProjects(fromStore){
+  var ids = {}; fromStore.forEach(function(p){ ids[p.id] = 1; });
+  var keep = teamProjects.filter(function(p){ return p.justSaved && !ids[p.id]; });
+  keep.forEach(function(p){ ids[p.id] = 1; });
+  // The store is the source of truth once it answers; the snapshot only fills in until then.
+  var snap = storeLoaded ? [] : snapshotProjects.filter(function(p){ return !ids[p.id]; });
+  teamProjects = fromStore.concat(keep, snap);
+  renderProjects();
+}
 function initStore(){
-  if (!(window.claude && window.claude.use)){ document.getElementById('projSub').textContent = 'Open this page in Claude to save new projects.'; return; }
-  window.claude.use('db').then(function(db){
-    if (!db){ document.getElementById('projSub').textContent = 'New projects stay only until you close this page (saving is not available in this view).'; return; }
+  setStoreState('Loading saved projects…');
+  if (!(window.claude && window.claude.use)){ setStoreState('Open this page in Claude to save new projects.'); return; }
+  setTimeout(function(){ if (!storeLoaded) setStoreState('Saved projects have not loaded in this view yet (' + VERSION + ')', true); }, 12000);
+  Promise.resolve().then(function(){ return window.claude.use('db'); }).then(function(db){
+    if (!db){ setStoreState('Saving is not available in this view (' + VERSION + ')', true); return; }
     projectsCol = db.collection('projects');
     // Live updates, plus a direct load on open and every 20 seconds in case live updates do not arrive in this view.
     projectsCol.onSnapshot(applySnapshot, storeError);
     loadProjects();
-    setInterval(function(){ if (!document.hidden && !busy) loadProjects(); }, 20000);
-  });
+    if (!window.__storeTimer) window.__storeTimer = setInterval(function(){ if (!document.hidden && !busy) loadProjects(); }, 20000);
+  }, function(e){ setStoreState('Could not connect to saved projects: ' + (e && (e.code || e.message) || 'error') + ' (' + VERSION + ')', true); });
 }
 function applySnapshot(snap){
-  savedOnline = true;
+  savedOnline = true; storeLoaded = true;
   var fromStore = snap.docs.map(function(d){ var o = d.data() || {}; o.id = d.id; return o; });
-  var ids = {}; fromStore.forEach(function(p){ ids[p.id] = 1; });
-  // Keep projects saved in this view that the store has not reported back yet.
-  teamProjects = fromStore.concat(teamProjects.filter(function(p){ return p.justSaved && !ids[p.id]; }));
-  document.getElementById('projSub').textContent = 'Web and mobile apps the team has built and checked. Open one to use it.' + (fromStore.length ? ' (' + fromStore.length + ' saved)' : '');
-  renderProjects();
+  setStoreState(fromStore.length + ' saved');
+  mergeProjects(fromStore);
 }
-function storeError(e){ document.getElementById('projSub').textContent = 'Saved projects could not be loaded (' + (e && e.code || 'error') + '). They will appear when the connection comes back.'; }
+function storeError(e){ if (!storeLoaded) setStoreState('Saved projects could not be loaded: ' + (e && (e.code || e.message) || 'error') + ' (' + VERSION + ')', true); }
 function loadProjects(){ if (projectsCol) projectsCol.get().then(applySnapshot, storeError); }
 
 // ---------- project viewer ----------
@@ -540,6 +565,7 @@ document.getElementById('confirmNo').onclick = function(){ confirmDlg.close(); }
 document.getElementById('confirmYes').onclick = function(){
   confirmDlg.close();
   var id = toDelete; toDelete = null; if (!id) return;
+  snapshotProjects = snapshotProjects.filter(function(p){ return p.id !== id; });
   if (projectsCol && savedOnline && id.indexOf('local-') !== 0) projectsCol.doc(id).delete().then(function(){ teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }, function(e){ toast('Could not delete it (' + (e && e.code || 'error') + '). Only editors of this page can delete projects.'); });
   else { teamProjects = teamProjects.filter(function(p){ return p.id !== id; }); renderProjects(); toast('Project deleted.'); }
 };
@@ -921,7 +947,7 @@ form.addEventListener('submit', function(e){
 });
 box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
 
-renderFeed(); renderProjects(); initStore();
+renderFeed(); renderProjects(); loadSnapshot(); initStore();
 })();
 </script>
 </body>
